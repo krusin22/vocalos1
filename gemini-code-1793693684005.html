@@ -1,0 +1,2549 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VOCAB_OS: 12 MINIGAMES (V8.4 UNLIMITED LENGTH)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        * { -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            background-color: #020617; 
+            background-image: radial-gradient(#1e293b 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: #38bdf8;
+            user-select: none;
+            -webkit-user-select: none;
+            overflow: hidden;
+        }
+        .scanline {
+            width: 100%;
+            height: 100px;
+            z-index: 0; 
+            position: absolute;
+            pointer-events: none;
+            background: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(56,189,248,0.05) 50%, rgba(0,0,0,0) 100%);
+            animation: scanline 8s linear infinite;
+        }
+        @keyframes scanline { 0% { top: -100px; } 100% { top: 100%; } }
+        
+        .btn-retro {
+            border: 2px solid #38bdf8;
+            background: #0f172a;
+            color: #38bdf8;
+            transition: transform 0.1s, background-color 0.1s;
+            cursor: pointer;
+            position: relative;
+            z-index: 50; 
+        }
+        .btn-retro:active { background: #38bdf8; color: #000; transform: scale(0.95); }
+        .btn-retro:disabled { border-color: #ef4444; color: #ef4444; opacity: 0.5; cursor: not-allowed; transform: none; }
+        
+        .danger-text { color: #f87171; }
+        .success-text { color: #4ade80; }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        .shake-anim { animation: shake 0.2s ease-in-out; }
+
+        @keyframes moveLeftRight {
+            0% { left: 0%; }
+            100% { left: calc(100% - 6rem); }
+        }
+        @media (min-width: 768px) {
+            @keyframes moveLeftRight { 0% { left: 0%; } 100% { left: calc(100% - 7rem); } }
+        }
+        @keyframes fallDown { 0% { top: -20%; } 100% { top: 120%; } }
+    </style>
+</head>
+<body class="h-[100dvh] w-screen flex items-center justify-center relative p-2 md:p-4">
+    <div class="scanline"></div>
+
+    <div class="w-full max-w-4xl h-full max-h-[900px] md:h-[85vh] bg-black border-2 md:border-4 border-sky-500 rounded-lg p-3 md:p-6 flex flex-col shadow-[0_0_20px_rgba(56,189,248,0.3)] z-10 relative">
+        
+        <!-- HEADER -->
+        <div class="flex justify-between items-end border-b-2 border-sky-500 pb-2 mb-3 md:mb-4 uppercase shrink-0">
+            <div>
+                <h1 class="text-xl md:text-3xl font-bold tracking-widest leading-none text-sky-400">VOCAB_OS</h1>
+                <p class="text-[10px] md:text-xs text-sky-700 mt-1">SYS V.8.4 // UNLIMITED LENGTH</p>
+            </div>
+            <div class="text-right">
+                <div class="text-sm md:text-xl text-sky-500">SCORE: <br class="block md:hidden"><span id="ui-score" class="text-xl md:text-3xl font-bold text-white">0000</span></div>
+            </div>
+        </div>
+
+        <!-- MENU SCREEN -->
+        <div id="screen-menu" class="flex-1 flex flex-col items-center justify-center overflow-y-auto z-20 relative">
+            <div class="text-5xl md:text-6xl mb-4 text-sky-300">🌍</div>
+            <p class="mb-6 text-center text-sm md:text-lg max-w-lg leading-relaxed px-2 text-slate-300">
+                ระบบคำศัพท์ถูกล็อค! <br>
+                <span id="vocab-count-display" class="text-green-400 font-bold">กำลังโหลดคลังคำศัพท์...</span><br>
+                <span class="text-sky-400 text-[11px] md:text-base block mt-2 border border-sky-800 p-3 md:p-4 bg-slate-900/80 rounded-lg">
+                    [ กฎการแฮก SURVIVAL ]<br>
+                    - พลาดได้ไม่เกิน 2 ครั้งต่อคำ<br>
+                    - ตอบถูกสุ่มรับคะแนน 20 - 100 แต้ม<br>
+                    - เวลาเริ่มที่ 60 วิ บีบเร็วสุดเหลือ 15 วิ
+                </span>
+            </p>
+            <button id="btn-start" class="btn-retro px-8 py-4 text-xl md:text-2xl font-bold w-full md:w-auto max-w-xs shadow-[0_0_15px_#0284c7] rounded-lg">
+                INITIATE HACK
+            </button>
+        </div>
+
+        <!-- GAME SCREEN -->
+        <div id="screen-game" class="hidden flex-1 flex flex-col h-full overflow-hidden z-20 relative">
+            <div class="w-full bg-slate-900 border border-sky-800 h-2 md:h-3 rounded-full mb-3 shrink-0 relative overflow-hidden pointer-events-none">
+                <div id="ui-timer-bar" class="bg-sky-500 h-full w-full transition-all duration-75"></div>
+                <div id="ui-timer-text" class="absolute inset-0 flex items-center justify-center text-[9px] md:text-[10px] font-bold text-white drop-shadow-md z-10">60.0s</div>
+            </div>
+
+            <div class="flex flex-col md:flex-row gap-2 md:gap-4 mb-3 shrink-0 pointer-events-none">
+                <div class="bg-slate-900 border border-sky-700 p-2 md:p-4 flex-1 text-center relative flex flex-col justify-center shadow-inner rounded-lg">
+                    <div id="target-category" class="text-[10px] md:text-xs text-sky-400 mb-1">CATEGORY: -</div>
+                    <div id="target-word" class="text-3xl sm:text-4xl md:text-5xl font-bold tracking-widest text-white">-</div>
+                </div>
+                <div class="bg-slate-900 border border-red-900 p-2 md:p-4 w-full md:w-48 text-center flex flex-row md:flex-col justify-center items-center gap-2 md:gap-0 rounded-lg">
+                    <div class="text-[10px] md:text-xs text-red-500 md:mb-1">LOCAL ERRORS:</div>
+                    <div id="ui-strikes" class="text-xl md:text-3xl font-bold text-red-500 tracking-widest">0/2</div>
+                </div>
+            </div>
+
+            <div id="minigame-container" class="flex-1 relative border-2 border-dashed border-sky-800 p-2 md:p-4 flex items-center justify-center bg-slate-950 overflow-hidden rounded-lg">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+
+        <!-- GAME OVER SCREEN -->
+        <div id="screen-gameover" class="hidden flex-1 flex flex-col items-center justify-center overflow-y-auto z-20 relative">
+            <h2 class="text-3xl md:text-5xl font-bold danger-text mb-2 text-center pointer-events-none">SYSTEM BREACHED!</h2>
+            <p class="mb-2 text-xs md:text-sm text-slate-400 pointer-events-none">VOCABULARY CONNECTION TERMINATED.</p>
+            
+            <div class="bg-slate-900 border border-sky-800 p-4 md:p-6 rounded-xl text-center my-4 w-full max-w-md shadow-lg pointer-events-none">
+                <div class="text-xs md:text-sm text-sky-500 mb-1">FINAL SCORE</div>
+                <div id="final-score" class="text-4xl md:text-5xl text-white font-bold mb-3 md:mb-4">0</div>
+                
+                <div class="text-xs md:text-sm text-sky-500 mb-1 border-t border-sky-800/50 pt-3 md:pt-4">ENGLISH RANK</div>
+                <div id="final-rank" class="text-xl md:text-2xl mt-1 font-bold">-</div>
+            </div>
+
+            <button id="btn-reboot" class="btn-retro px-8 py-3 text-lg md:text-xl mt-2 w-full md:w-auto max-w-xs rounded-lg">
+                REBOOT SYSTEM
+            </button>
+        </div>
+
+    </div>
+
+    <!-- ============================================== -->
+    <!-- JAVASCRIPT GAME LOGIC                          -->
+    <!-- ============================================== -->
+    <script>
+        // 1. 📚 ฐานข้อมูลคำศัพท์ (คุณครูใส่เพิ่มได้ตรงนี้)
+        const rawVocabData = `
+เอเลี่ยน,ALIEN,คำศัพท์ทั่วไป (General)
+แมว,CAT,สัตว์ (Animals)
+หมา,DOG,สัตว์ (Animals)
+สีแดง,RED,สี (Colors)
+น้ำแข็ง,ICE,อาหาร (Food)
+แมว,CAT,สัตว์ (Animals)
+หมา,DOG,สัตว์ (Animals)
+หมู,PIG,สัตว์ (Animals)
+มด,ANT,สัตว์ (Animals)
+ค้างคาว,BAT,สัตว์ (Animals)
+วัว,COW,สัตว์ (Animals)
+สุนัขจิ้งจอก,FOX,สัตว์ (Animals)
+หนู,RAT,สัตว์ (Animals)
+นก,BIRD,สัตว์ (Animals)
+ปลา,FISH,สัตว์ (Animals)
+หมี,BEAR,สัตว์ (Animals)
+สิงโต,LION,สัตว์ (Animals)
+กบ,FROG,สัตว์ (Animals)
+ม้า,HORSE,สัตว์ (Animals)
+เป็ด,DUCK,สัตว์ (Animals)
+แพะ,GOAT,สัตว์ (Animals)
+แกะ,SHEEP,สัตว์ (Animals)
+ช้าง,ELEPHANT,สัตว์ (Animals)
+เสือ,TIGER,สัตว์ (Animals)
+งู,SNAKE,สัตว์ (Animals)
+ลิง,MONKEY,สัตว์ (Animals)
+ม้าลาย,ZEBRA,สัตว์ (Animals)
+กระต่าย,RABBIT,สัตว์ (Animals)
+เต่า,TURTLE,สัตว์ (Animals)
+แมงมุม,SPIDER,สัตว์ (Animals)
+ปู,CRAB,สัตว์ (Animals)
+กุ้ง,SHRIMP,สัตว์ (Animals)
+หอยทาก,SNAIL,สัตว์ (Animals)
+ไก่,CHICKEN,สัตว์ (Animals)
+ฉลาม,SHARK,สัตว์ (Animals)
+วาฬ,WHALE,สัตว์ (Animals)
+โลมา,DOLPHIN,สัตว์ (Animals)
+เพนกวิน,PENGUIN,สัตว์ (Animals)
+สีแดง,RED,สี (Colors)
+สีฟ้า,BLUE,สี (Colors)
+สีชมพู,PINK,สี (Colors)
+สีเทา,GRAY,สี (Colors)
+สีเขียว,GREEN,สี (Colors)
+สีดำ,BLACK,สี (Colors)
+สีขาว,WHITE,สี (Colors)
+สีเหลือง,YELLOW,สี (Colors)
+สีส้ม,ORANGE,สี (Colors)
+สีม่วง,PURPLE,สี (Colors)
+สีน้ำตาล,BROWN,สี (Colors)
+สีเงิน,SILVER,สี (Colors)
+สีทอง,GOLD,สี (Colors)
+น้ำแข็ง,ICE,อาหาร (Food)
+ไข่,EGG,อาหาร (Food)
+นม,MILK,อาหาร (Food)
+เนื้อสัตว์,MEAT,อาหาร (Food)
+เค้ก,CAKE,อาหาร (Food)
+ข้าว,RICE,อาหาร (Food)
+แอปเปิ้ล,APPLE,อาหาร (Food)
+น้ำ,WATER,อาหาร (Food)
+ขนมปัง,BREAD,อาหาร (Food)
+กล้วย,BANANA,อาหาร (Food)
+มะม่วง,MANGO,อาหาร (Food)
+องุ่น,GRAPE,อาหาร (Food)
+สับปะรด,PINEAPPLE,อาหาร (Food)
+มะละกอ,PAPAYA,อาหาร (Food)
+แตงโม,WATERMELON,อาหาร (Food)
+พิซซ่า,PIZZA,อาหาร (Food)
+แฮมเบอร์เกอร์,BURGER,อาหาร (Food)
+สลัด,SALAD,อาหาร (Food)
+ซุป,SOUP,อาหาร (Food)
+ปลาทอด,FISH,อาหาร (Food)
+ไก่ทอด,CHICKEN,อาหาร (Food)
+น้ำผลไม้,JUICE,อาหาร (Food)
+กาแฟ,COFFEE,อาหาร (Food)
+ชา,TEA,อาหาร (Food)
+ชีส,CHEESE,อาหาร (Food)
+เนย,BUTTER,อาหาร (Food)
+น้ำตาล,SUGAR,อาหาร (Food)
+เกลือ,SALT,อาหาร (Food)
+พริกไทย,PEPPER,อาหาร (Food)
+ปากกา,PEN,สิ่งของ (Objects)
+แผนที่,MAP,สิ่งของ (Objects)
+กล่อง,BOX,สิ่งของ (Objects)
+ถ้วย,CUP,สิ่งของ (Objects)
+เตียง,BED,สิ่งของ (Objects)
+ของเล่น,TOY,สิ่งของ (Objects)
+โต๊ะเรียน,DESK,สิ่งของ (Objects)
+หนังสือ,BOOK,สิ่งของ (Objects)
+ประตู,DOOR,สิ่งของ (Objects)
+โคมไฟ,LAMP,สิ่งของ (Objects)
+แหวน,RING,สิ่งของ (Objects)
+ดินสอ,PENCIL,สิ่งของ (Objects)
+ไม้บรรทัด,RULER,สิ่งของ (Objects)
+ยางลบ,ERASER,สิ่งของ (Objects)
+กระเป๋า,BAG,สิ่งของ (Objects)
+เก้าอี้,CHAIR,สิ่งของ (Objects)
+หน้าต่าง,WINDOW,สิ่งของ (Objects)
+พัดลม,FAN,สิ่งของ (Objects)
+นาฬิกา,CLOCK,สิ่งของ (Objects)
+โทรทัศน์,TV,สิ่งของ (Objects)
+โทรศัพท์,PHONE,สิ่งของ (Objects)
+คอมพิวเตอร์,COMPUTER,สิ่งของ (Objects)
+ร่ม,UMBRELLA,สิ่งของ (Objects)
+กุญแจ,KEY,สิ่งของ (Objects)
+กระจก,MIRROR,สิ่งของ (Objects)
+หวี,COMB,สิ่งของ (Objects)
+สบู่,SOAP,สิ่งของ (Objects)
+แปรงสีฟัน,TOOTHBRUSH,สิ่งของ (Objects)
+หมอน,PILLOW,สิ่งของ (Objects)
+ผ้าห่ม,BLANKET,สิ่งของ (Objects)
+พระอาทิตย์,SUN,ธรรมชาติ (Nature)
+ดวงจันทร์,MOON,ธรรมชาติ (Nature)
+ดาว,STAR,ธรรมชาติ (Nature)
+ต้นไม้,TREE,ธรรมชาติ (Nature)
+ลม,WIND,ธรรมชาติ (Nature)
+ฝน,RAIN,ธรรมชาติ (Nature)
+หิมะ,SNOW,ธรรมชาติ (Nature)
+หิน,ROCK,ธรรมชาติ (Nature)
+ดอกไม้,FLOWER,ธรรมชาติ (Nature)
+ท้องฟ้า,SKY,ธรรมชาติ (Nature)
+เมฆ,CLOUD,ธรรมชาติ (Nature)
+แม่น้ำ,RIVER,ธรรมชาติ (Nature)
+ทะเล,SEA,ธรรมชาติ (Nature)
+ภูเขา,MOUNTAIN,ธรรมชาติ (Nature)
+ป่า,FOREST,ธรรมชาติ (Nature)
+ทราย,SAND,ธรรมชาติ (Nature)
+ดิน,SOIL,ธรรมชาติ (Nature)
+หญ้า,GRASS,ธรรมชาติ (Nature)
+ใบไม้,LEAF,ธรรมชาติ (Nature)
+ไฟ,FIRE,ธรรมชาติ (Nature)
+ตา,EYE,ร่างกาย (Body)
+หู,EAR,ร่างกาย (Body)
+แขน,ARM,ร่างกาย (Body)
+ขา,LEG,ร่างกาย (Body)
+มือ,HAND,ร่างกาย (Body)
+ศีรษะ,HEAD,ร่างกาย (Body)
+ผม,HAIR,ร่างกาย (Body)
+จมูก,NOSE,ร่างกาย (Body)
+ปาก,MOUTH,ร่างกาย (Body)
+ฟัน,TOOTH,ร่างกาย (Body)
+ลิ้น,TONGUE,ร่างกาย (Body)
+คอ,NECK,ร่างกาย (Body)
+ไหล่,SHOULDER,ร่างกาย (Body)
+นิ้วมือ,FINGER,ร่างกาย (Body)
+นิ้วเท้า,TOE,ร่างกาย (Body)
+เท้า,FOOT,ร่างกาย (Body)
+เข่า,KNEE,ร่างกาย (Body)
+หลัง,BACK,ร่างกาย (Body)
+ท้อง,STOMACH,ร่างกาย (Body)
+หัวใจ,HEART,ร่างกาย (Body)
+บ้าน,HOUSE,สถานที่ (Places)
+โรงเรียน,SCHOOL,สถานที่ (Places)
+วัด,TEMPLE,สถานที่ (Places)
+ตลาด,MARKET,สถานที่ (Places)
+โรงพยาบาล,HOSPITAL,สถานที่ (Places)
+สวนสาธารณะ,PARK,สถานที่ (Places)
+สวนสัตว์,ZOO,สถานที่ (Places)
+ธนาคาร,BANK,สถานที่ (Places)
+ร้านอาหาร,RESTAURANT,สถานที่ (Places)
+สนามบิน,AIRPORT,สถานที่ (Places)
+สถานีตำรวจ,POLICE,สถานที่ (Places)
+เมือง,CITY,สถานที่ (Places)
+ประเทศ,COUNTRY,สถานที่ (Places)
+รถยนต์,CAR,ยานพาหนะ (Vehicles)
+รถบัส,BUS,ยานพาหนะ (Vehicles)
+รถไฟ,TRAIN,ยานพาหนะ (Vehicles)
+เรือ,BOAT,ยานพาหนะ (Vehicles)
+เครื่องบิน,AIRPLANE,ยานพาหนะ (Vehicles)
+จักรยาน,BICYCLE,ยานพาหนะ (Vehicles)
+มอเตอร์ไซค์,MOTORCYCLE,ยานพาหนะ (Vehicles)
+รถบรรทุก,TRUCK,ยานพาหนะ (Vehicles)
+รถตู้,VAN,ยานพาหนะ (Vehicles)
+หมวก,HAT,เครื่องแต่งกาย (Clothes)
+รองเท้า,SHOES,เครื่องแต่งกาย (Clothes)
+เสื้อเชิ้ต,SHIRT,เครื่องแต่งกาย (Clothes)
+กระโปรง,SKIRT,เครื่องแต่งกาย (Clothes)
+กางเกงขาสั้น,SHORTS,เครื่องแต่งกาย (Clothes)
+กางเกงขายาว,PANTS,เครื่องแต่งกาย (Clothes)
+ถุงเท้า,SOCKS,เครื่องแต่งกาย (Clothes)
+แจ็คเก็ต,JACKET,เครื่องแต่งกาย (Clothes)
+วิ่ง,RUN,คำกริยา (Verbs)
+เดิน,WALK,คำกริยา (Verbs)
+กระโดด,JUMP,คำกริยา (Verbs)
+นั่ง,SIT,คำกริยา (Verbs)
+ยืน,STAND,คำกริยา (Verbs)
+ว่ายน้ำ,SWIM,คำกริยา (Verbs)
+บิน,FLY,คำกริยา (Verbs)
+กิน,EAT,คำกริยา (Verbs)
+ดื่ม,DRINK,คำกริยา (Verbs)
+นอนหลับ,SLEEP,คำกริยา (Verbs)
+อ่าน,READ,คำกริยา (Verbs)
+เขียน,WRITE,คำกริยา (Verbs)
+พูด,SPEAK,คำกริยา (Verbs)
+ฟัง,LISTEN,คำกริยา (Verbs)
+มองดู,LOOK,คำกริยา (Verbs)
+เล่น,PLAY,คำกริยา (Verbs)
+ทำงาน,WORK,คำกริยา (Verbs)
+ร้องเพลง,SING,คำกริยา (Verbs)
+เต้น,DANCE,คำกริยา (Verbs)
+วาดรูป,DRAW,คำกริยา (Verbs)
+ซื้อ,BUY,คำกริยา (Verbs)
+ขาย,SELL,คำกริยา (Verbs)
+ไป,GO,คำกริยา (Verbs)
+มา,COME,คำกริยา (Verbs)
+หยุด,STOP,คำกริยา (Verbs)
+เปิด,OPEN,คำกริยา (Verbs)
+ปิด,CLOSE,คำกริยา (Verbs)
+ยิ้ม,SMILE,คำกริยา (Verbs)
+ร้องไห้,CRY,คำกริยา (Verbs)
+คิด,THINK,คำกริยา (Verbs)
+ดี,GOOD,คำคุณศัพท์ (Adjectives)
+เลว,BAD,คำคุณศัพท์ (Adjectives)
+ใหญ่,BIG,คำคุณศัพท์ (Adjectives)
+เล็ก,SMALL,คำคุณศัพท์ (Adjectives)
+สูง,TALL,คำคุณศัพท์ (Adjectives)
+เตี้ย,SHORT,คำคุณศัพท์ (Adjectives)
+ยาว,LONG,คำคุณศัพท์ (Adjectives)
+ร้อน,HOT,คำคุณศัพท์ (Adjectives)
+เย็น,COLD,คำคุณศัพท์ (Adjectives)
+เร็ว,FAST,คำคุณศัพท์ (Adjectives)
+ช้า,SLOW,คำคุณศัพท์ (Adjectives)
+ใหม่,NEW,คำคุณศัพท์ (Adjectives)
+เก่า,OLD,คำคุณศัพท์ (Adjectives)
+สวย,BEAUTIFUL,คำคุณศัพท์ (Adjectives)
+น่าเกลียด,UGLY,คำคุณศัพท์ (Adjectives)
+สะอาด,CLEAN,คำคุณศัพท์ (Adjectives)
+สกปรก,DIRTY,คำคุณศัพท์ (Adjectives)
+มีความสุข,HAPPY,คำคุณศัพท์ (Adjectives)
+เศร้า,SAD,คำคุณศัพท์ (Adjectives)
+โกรธ,ANGRY,คำคุณศัพท์ (Adjectives)
+หิว,HUNGRY,คำคุณศัพท์ (Adjectives)
+อิ่ม,FULL,คำคุณศัพท์ (Adjectives)
+เหนื่อย,TIRED,คำคุณศัพท์ (Adjectives)
+หนัก,HEAVY,คำคุณศัพท์ (Adjectives)
+เบา,LIGHT,คำคุณศัพท์ (Adjectives)
+ยาก,HARD,คำคุณศัพท์ (Adjectives)
+ง่าย,EASY,คำคุณศัพท์ (Adjectives)
+แมว,CAT,สัตว์ (Animals)
+หมา,DOG,สัตว์ (Animals)
+หมู,PIG,สัตว์ (Animals)
+มด,ANT,สัตว์ (Animals)
+ค้างคาว,BAT,สัตว์ (Animals)
+วัว,COW,สัตว์ (Animals)
+สุนัขจิ้งจอก,FOX,สัตว์ (Animals)
+หนู,RAT,สัตว์ (Animals)
+นก,BIRD,สัตว์ (Animals)
+ปลา,FISH,สัตว์ (Animals)
+หมี,BEAR,สัตว์ (Animals)
+สิงโต,LION,สัตว์ (Animals)
+กบ,FROG,สัตว์ (Animals)
+ม้า,HORSE,สัตว์ (Animals)
+เป็ด,DUCK,สัตว์ (Animals)
+แพะ,GOAT,สัตว์ (Animals)
+แกะ,SHEEP,สัตว์ (Animals)
+ช้าง,ELEPHANT,สัตว์ (Animals)
+เสือ,TIGER,สัตว์ (Animals)
+งู,SNAKE,สัตว์ (Animals)
+ลิง,MONKEY,สัตว์ (Animals)
+ม้าลาย,ZEBRA,สัตว์ (Animals)
+กระต่าย,RABBIT,สัตว์ (Animals)
+เต่า,TURTLE,สัตว์ (Animals)
+แมงมุม,SPIDER,สัตว์ (Animals)
+ปู,CRAB,สัตว์ (Animals)
+กุ้ง,SHRIMP,สัตว์ (Animals)
+หอยทาก,SNAIL,สัตว์ (Animals)
+ไก่,CHICKEN,สัตว์ (Animals)
+ฉลาม,SHARK,สัตว์ (Animals)
+วาฬ,WHALE,สัตว์ (Animals)
+โลมา,DOLPHIN,สัตว์ (Animals)
+เพนกวิน,PENGUIN,สัตว์ (Animals)
+จระเข้,CROCODILE,สัตว์ (Animals)
+กวาง,DEER,สัตว์ (Animals)
+หมาป่า,WOLF,สัตว์ (Animals)
+นกฮูก,OWL,สัตว์ (Animals)
+นกแก้ว,PARROT,สัตว์ (Animals)
+นกกระจอกเทศ,OSTRICH,สัตว์ (Animals)
+นกยูง,PEACOCK,สัตว์ (Animals)
+หงส์,SWAN,สัตว์ (Animals)
+แมลงปอ,DRAGONFLY,สัตว์ (Animals)
+ผีเสื้อ,BUTTERFLY,สัตว์ (Animals)
+ผึ้ง,BEE,สัตว์ (Animals)
+ยุง,MOSQUITO,สัตว์ (Animals)
+แมลงวัน,FLY,สัตว์ (Animals)
+หนอน,WORM,สัตว์ (Animals)
+ยีราฟ,GIRAFFE,สัตว์ (Animals)
+ฮิปโป,HIPPO,สัตว์ (Animals)
+แรด,RHINO,สัตว์ (Animals)
+อูฐ,CAMEL,สัตว์ (Animals)
+จิงโจ้,KANGAROO,สัตว์ (Animals)
+หมีโคอาล่า,KOALA,สัตว์ (Animals)
+แพนด้า,PANDA,สัตว์ (Animals)
+กระรอก,SQUIRREL,สัตว์ (Animals)
+คางคก,TOAD,สัตว์ (Animals)
+แมงกะพรุน,JELLYFISH,สัตว์ (Animals)
+ปลาหมึก,SQUID,สัตว์ (Animals)
+ปลาหมึกยักษ์,OCTOPUS,สัตว์ (Animals)
+ม้าน้ำ,SEAHORSE,สัตว์ (Animals)
+ปลาดาว,STARFISH,สัตว์ (Animals)
+หอย,CLAM,สัตว์ (Animals)
+หมาจิ้งจอก,JACKAL,สัตว์ (Animals)
+เสือชีตาห์,CHEETAH,สัตว์ (Animals)
+เสือดาว,LEOPARD,สัตว์ (Animals)
+กอริลลา,GORILLA,สัตว์ (Animals)
+ชิมแปนซี,CHIMPANZEE,สัตว์ (Animals)
+ค้างคาวแม่ไก่,FLYINGFOX,สัตว์ (Animals)
+หนูตะเภา,GUINEAPIG,สัตว์ (Animals)
+แฮมสเตอร์,HAMSTER,สัตว์ (Animals)
+แมวน้ำ,SEAL,สัตว์ (Animals)
+สิงโตทะเล,SEALION,สัตว์ (Animals)
+วอลรัส,WALRUS,สัตว์ (Animals)
+นกกระยาง,EGRET,สัตว์ (Animals)
+นกอินทรี,EAGLE,สัตว์ (Animals)
+นกเหยี่ยว,HAWK,สัตว์ (Animals)
+นกพิราบ,PIGEON,สัตว์ (Animals)
+นกนางนวล,SEAGULL,สัตว์ (Animals)
+นกหัวขวาน,WOODPECKER,สัตว์ (Animals)
+นกนางแอ่น,SWALLOW,สัตว์ (Animals)
+อีกา,CROW,สัตว์ (Animals)
+แมลงสาบ,COCKROACH,สัตว์ (Animals)
+เต่าทอง,LADYBUG,สัตว์ (Animals)
+ตั๊กแตน,GRASSHOPPER,สัตว์ (Animals)
+จิ้งจก,LIZARD,สัตว์ (Animals)
+ตุ๊กแก,GECKO,สัตว์ (Animals)
+อิกัวน่า,IGUANA,สัตว์ (Animals)
+กิ้งก่า,CHAMELEON,สัตว์ (Animals)
+งูเห่า,COBRA,สัตว์ (Animals)
+งูหลาม,PYTHON,สัตว์ (Animals)
+หนูผี,SHREW,สัตว์ (Animals)
+ตัวตุ่น,MOLE,สัตว์ (Animals)
+เม่น,HEDGEHOG,สัตว์ (Animals)
+เม่นใหญ่,PORCUPINE,สัตว์ (Animals)
+ตัวสลอธ,SLOTH,สัตว์ (Animals)
+ตัวนิ่ม,PANGOLIN,สัตว์ (Animals)
+อัลปาก้า,ALPACA,สัตว์ (Animals)
+ลา,DONKEY,สัตว์ (Animals)
+ควาย,BUFFALO,สัตว์ (Animals)
+ไก่งวง,TURKEY,สัตว์ (Animals)
+ห่าน,GOOSE,สัตว์ (Animals)
+แอปเปิ้ล,APPLE,ผลไม้ (Fruits)
+กล้วย,BANANA,ผลไม้ (Fruits)
+มะม่วง,MANGO,ผลไม้ (Fruits)
+องุ่น,GRAPE,ผลไม้ (Fruits)
+สับปะรด,PINEAPPLE,ผลไม้ (Fruits)
+มะละกอ,PAPAYA,ผลไม้ (Fruits)
+แตงโม,WATERMELON,ผลไม้ (Fruits)
+ส้ม,ORANGE,ผลไม้ (Fruits)
+มะนาว,LEMON,ผลไม้ (Fruits)
+มะนาวเขียว,LIME,ผลไม้ (Fruits)
+สตรอเบอร์รี่,STRAWBERRY,ผลไม้ (Fruits)
+บลูเบอร์รี่,BLUEBERRY,ผลไม้ (Fruits)
+เชอร์รี่,CHERRY,ผลไม้ (Fruits)
+พีช,PEACH,ผลไม้ (Fruits)
+ลูกพลัม,PLUM,ผลไม้ (Fruits)
+กีวี่,KIWI,ผลไม้ (Fruits)
+ฝรั่ง,GUAVA,ผลไม้ (Fruits)
+มะพร้าว,COCONUT,ผลไม้ (Fruits)
+ทับทิม,POMEGRANATE,ผลไม้ (Fruits)
+อะโวคาโด,AVOCADO,ผลไม้ (Fruits)
+มะขาม,TAMARIND,ผลไม้ (Fruits)
+มังคุด,MANGOSTEEN,ผลไม้ (Fruits)
+เงาะ,RAMBUTAN,ผลไม้ (Fruits)
+ลิ้นจี่,LYCHEE,ผลไม้ (Fruits)
+ลำไย,LONGAN,ผลไม้ (Fruits)
+ทุเรียน,DURIAN,ผลไม้ (Fruits)
+ขนุน,JACKFRUIT,ผลไม้ (Fruits)
+แก้วมังกร,DRAGONFRUIT,ผลไม้ (Fruits)
+เสาวรส,PASSIONFRUIT,ผลไม้ (Fruits)
+แคนตาลูป,CANTALOUPE,ผลไม้ (Fruits)
+แครอท,CARROT,ผัก (Vegetables)
+กะหล่ำปลี,CABBAGE,ผัก (Vegetables)
+ผักกาดหอม,LETTUCE,ผัก (Vegetables)
+ผักโขม,SPINACH,ผัก (Vegetables)
+มะเขือเทศ,TOMATO,ผัก (Vegetables)
+มันฝรั่ง,POTATO,ผัก (Vegetables)
+หอมหัวใหญ่,ONION,ผัก (Vegetables)
+กระเทียม,GARLIC,ผัก (Vegetables)
+พริก,CHILI,ผัก (Vegetables)
+พริกหยวก,BELLPEPPER,ผัก (Vegetables)
+บรอกโคลี,BROCCOLI,ผัก (Vegetables)
+กะหล่ำดอก,CAULIFLOWER,ผัก (Vegetables)
+ข้าวโพด,CORN,ผัก (Vegetables)
+แตงกวา,CUCUMBER,ผัก (Vegetables)
+ฟักทอง,PUMPKIN,ผัก (Vegetables)
+เห็ด,MUSHROOM,ผัก (Vegetables)
+ถั่วฝักยาว,YARDBEAN,ผัก (Vegetables)
+ถั่วลันเตา,PEA,ผัก (Vegetables)
+มะเขือเปราะ,EGGPLANT,ผัก (Vegetables)
+ขิง,GINGER,ผัก (Vegetables)
+ข่า,GALANGAL,ผัก (Vegetables)
+ตะไคร้,LEMONGRASS,ผัก (Vegetables)
+สะระแหน่,MINT,ผัก (Vegetables)
+ผักชี,CORIANDER,ผัก (Vegetables)
+หัวไชเท้า,RADISH,ผัก (Vegetables)
+หน่อไม้ฝรั่ง,ASPARAGUS,ผัก (Vegetables)
+ขึ้นฉ่าย,CELERY,ผัก (Vegetables)
+มันเทศ,SWEETPOTATO,ผัก (Vegetables)
+เผือก,TARO,ผัก (Vegetables)
+ตำลึง,GOURD,ผัก (Vegetables)
+น้ำแข็ง,ICE,อาหารและเครื่องดื่ม (Food & Drinks)
+ไข่,EGG,อาหารและเครื่องดื่ม (Food & Drinks)
+นม,MILK,อาหารและเครื่องดื่ม (Food & Drinks)
+เนื้อสัตว์,MEAT,อาหารและเครื่องดื่ม (Food & Drinks)
+เค้ก,CAKE,อาหารและเครื่องดื่ม (Food & Drinks)
+ข้าว,RICE,อาหารและเครื่องดื่ม (Food & Drinks)
+น้ำ,WATER,อาหารและเครื่องดื่ม (Food & Drinks)
+ขนมปัง,BREAD,อาหารและเครื่องดื่ม (Food & Drinks)
+พิซซ่า,PIZZA,อาหารและเครื่องดื่ม (Food & Drinks)
+แฮมเบอร์เกอร์,BURGER,อาหารและเครื่องดื่ม (Food & Drinks)
+สลัด,SALAD,อาหารและเครื่องดื่ม (Food & Drinks)
+ซุป,SOUP,อาหารและเครื่องดื่ม (Food & Drinks)
+ปลาทอด,FRIEDFISH,อาหารและเครื่องดื่ม (Food & Drinks)
+ไก่ทอด,FRIEDCHICKEN,อาหารและเครื่องดื่ม (Food & Drinks)
+น้ำผลไม้,JUICE,อาหารและเครื่องดื่ม (Food & Drinks)
+กาแฟ,COFFEE,อาหารและเครื่องดื่ม (Food & Drinks)
+ชา,TEA,อาหารและเครื่องดื่ม (Food & Drinks)
+ชีส,CHEESE,อาหารและเครื่องดื่ม (Food & Drinks)
+เนย,BUTTER,อาหารและเครื่องดื่ม (Food & Drinks)
+น้ำตาล,SUGAR,อาหารและเครื่องดื่ม (Food & Drinks)
+เกลือ,SALT,อาหารและเครื่องดื่ม (Food & Drinks)
+พริกไทย,PEPPER,อาหารและเครื่องดื่ม (Food & Drinks)
+หมูเนื้อแดง,PORK,อาหารและเครื่องดื่ม (Food & Drinks)
+เนื้อวัว,BEEF,อาหารและเครื่องดื่ม (Food & Drinks)
+ไส้กรอก,SAUSAGE,อาหารและเครื่องดื่ม (Food & Drinks)
+แฮม,HAM,อาหารและเครื่องดื่ม (Food & Drinks)
+เบคอน,BACON,อาหารและเครื่องดื่ม (Food & Drinks)
+สเต็ก,STEAK,อาหารและเครื่องดื่ม (Food & Drinks)
+ก๋วยเตี๋ยว,NOODLE,อาหารและเครื่องดื่ม (Food & Drinks)
+พาสต้า,PASTA,อาหารและเครื่องดื่ม (Food & Drinks)
+มักกะโรนี,MACARONI,อาหารและเครื่องดื่ม (Food & Drinks)
+แซนวิช,SANDWICH,อาหารและเครื่องดื่ม (Food & Drinks)
+ฮอทดอก,HOTDOG,อาหารและเครื่องดื่ม (Food & Drinks)
+แพนเค้ก,PANCAKE,อาหารและเครื่องดื่ม (Food & Drinks)
+วาฟเฟิล,WAFFLE,อาหารและเครื่องดื่ม (Food & Drinks)
+คุกกี้,COOKIE,อาหารและเครื่องดื่ม (Food & Drinks)
+ช็อคโกแลต,CHOCOLATE,อาหารและเครื่องดื่ม (Food & Drinks)
+ลูกอม,CANDY,อาหารและเครื่องดื่ม (Food & Drinks)
+ไอศกรีม,ICECREAM,อาหารและเครื่องดื่ม (Food & Drinks)
+พุดดิ้ง,PUDDING,อาหารและเครื่องดื่ม (Food & Drinks)
+น้ำผึ้ง,HONEY,อาหารและเครื่องดื่ม (Food & Drinks)
+แยม,JAM,อาหารและเครื่องดื่ม (Food & Drinks)
+โยเกิร์ต,YOGURT,อาหารและเครื่องดื่ม (Food & Drinks)
+น้ำแร่,MINERALWATER,อาหารและเครื่องดื่ม (Food & Drinks)
+น้ำอัดลม,SODA,อาหารและเครื่องดื่ม (Food & Drinks)
+นมช็อคโกแลต,CHOCOLATEMILK,อาหารและเครื่องดื่ม (Food & Drinks)
+ชาเขียว,GREENTEA,อาหารและเครื่องดื่ม (Food & Drinks)
+เบียร์,BEER,อาหารและเครื่องดื่ม (Food & Drinks)
+ไวน์,WINE,อาหารและเครื่องดื่ม (Food & Drinks)
+เครื่องเทศ,SPICE,อาหารและเครื่องดื่ม (Food & Drinks)
+ซอส,SAUCE,อาหารและเครื่องดื่ม (Food & Drinks)
+น้ำปลา,FISHSAUCE,อาหารและเครื่องดื่ม (Food & Drinks)
+ซีอิ๊ว,SOYSAUCE,อาหารและเครื่องดื่ม (Food & Drinks)
+น้ำมัน,OIL,อาหารและเครื่องดื่ม (Food & Drinks)
+น้ำส้มสายชู,VINEGAR,อาหารและเครื่องดื่ม (Food & Drinks)
+ปากกา,PEN,สิ่งของ (Objects)
+แผนที่,MAP,สิ่งของ (Objects)
+กล่อง,BOX,สิ่งของ (Objects)
+ถ้วย,CUP,สิ่งของ (Objects)
+เตียง,BED,สิ่งของ (Objects)
+ของเล่น,TOY,สิ่งของ (Objects)
+โต๊ะเรียน,DESK,สิ่งของ (Objects)
+หนังสือ,BOOK,สิ่งของ (Objects)
+ประตู,DOOR,สิ่งของ (Objects)
+โคมไฟ,LAMP,สิ่งของ (Objects)
+แหวน,RING,สิ่งของ (Objects)
+ดินสอ,PENCIL,สิ่งของ (Objects)
+ไม้บรรทัด,RULER,สิ่งของ (Objects)
+ยางลบ,ERASER,สิ่งของ (Objects)
+กระเป๋า,BAG,สิ่งของ (Objects)
+เก้าอี้,CHAIR,สิ่งของ (Objects)
+หน้าต่าง,WINDOW,สิ่งของ (Objects)
+พัดลม,FAN,สิ่งของ (Objects)
+นาฬิกา,CLOCK,สิ่งของ (Objects)
+โทรทัศน์,TV,สิ่งของ (Objects)
+โทรศัพท์,PHONE,สิ่งของ (Objects)
+คอมพิวเตอร์,COMPUTER,สิ่งของ (Objects)
+ร่ม,UMBRELLA,สิ่งของ (Objects)
+กุญแจ,KEY,สิ่งของ (Objects)
+กระจก,MIRROR,สิ่งของ (Objects)
+หวี,COMB,สิ่งของ (Objects)
+สบู่,SOAP,สิ่งของ (Objects)
+แปรงสีฟัน,TOOTHBRUSH,สิ่งของ (Objects)
+หมอน,PILLOW,สิ่งของ (Objects)
+ผ้าห่ม,BLANKET,สิ่งของ (Objects)
+โต๊ะ,TABLE,สิ่งของ (Objects)
+โซฟา,SOFA,สิ่งของ (Objects)
+ตู้,CABINET,สิ่งของ (Objects)
+ชั้นวางของ,SHELF,สิ่งของ (Objects)
+ตู้เย็น,REFRIGERATOR,สิ่งของ (Objects)
+ไมโครเวฟ,MICROWAVE,สิ่งของ (Objects)
+เตาอบ,OVEN,สิ่งของ (Objects)
+กระทะ,PAN,สิ่งของ (Objects)
+หม้อ,POT,สิ่งของ (Objects)
+จาน,PLATE,สิ่งของ (Objects)
+ชาม,BOWL,สิ่งของ (Objects)
+ช้อน,SPOON,สิ่งของ (Objects)
+ส้อม,FORK,สิ่งของ (Objects)
+มีด,KNIFE,สิ่งของ (Objects)
+ตะเกียบ,CHOPSTICKS,สิ่งของ (Objects)
+แก้วน้ำ,GLASS,สิ่งของ (Objects)
+ขวด,BOTTLE,สิ่งของ (Objects)
+เหยือก,JUG,สิ่งของ (Objects)
+ผ้าขนหนู,TOWEL,สิ่งของ (Objects)
+แชมพู,SHAMPOO,สิ่งของ (Objects)
+ยาสีฟัน,TOOTHPASTE,สิ่งของ (Objects)
+กระดาษชำระ,TISSUE,สิ่งของ (Objects)
+กรรไกร,SCISSORS,สิ่งของ (Objects)
+กาว,GLUE,สิ่งของ (Objects)
+เทป,TAPE,สิ่งของ (Objects)
+กระดาษ,PAPER,สิ่งของ (Objects)
+สมุด,NOTEBOOK,สิ่งของ (Objects)
+แฟ้ม,FILE,สิ่งของ (Objects)
+เครื่องคิดเลข,CALCULATOR,สิ่งของ (Objects)
+ปฏิทิน,CALENDAR,สิ่งของ (Objects)
+รูปภาพ,PICTURE,สิ่งของ (Objects)
+กรอบรูป,FRAME,สิ่งของ (Objects)
+แจกัน,VASE,สิ่งของ (Objects)
+ไม้กวาด,BROOM,สิ่งของ (Objects)
+ถังขยะ,BIN,สิ่งของ (Objects)
+กระถางต้นไม้,POT,สิ่งของ (Objects)
+เตารีด,IRON,สิ่งของ (Objects)
+เครื่องซักผ้า,WASHER,สิ่งของ (Objects)
+กล้องถ่ายรูป,CAMERA,สิ่งของ (Objects)
+วิทยุ,RADIO,สิ่งของ (Objects)
+กระเป๋าสตางค์,WALLET,สิ่งของ (Objects)
+เหรียญ,COIN,สิ่งของ (Objects)
+ธนบัตร,BANKNOTE,สิ่งของ (Objects)
+บัตร,CARD,สิ่งของ (Objects)
+แว่นตา,GLASSES,สิ่งของ (Objects)
+นาฬิกาข้อมือ,WATCH,สิ่งของ (Objects)
+สร้อยคอ,NECKLACE,สิ่งของ (Objects)
+ต่างหู,EARRING,สิ่งของ (Objects)
+กำไล,BRACELET,สิ่งของ (Objects)
+พระอาทิตย์,SUN,ธรรมชาติ (Nature)
+ดวงจันทร์,MOON,ธรรมชาติ (Nature)
+ดาว,STAR,ธรรมชาติ (Nature)
+ต้นไม้,TREE,ธรรมชาติ (Nature)
+ลม,WIND,ธรรมชาติ (Nature)
+ฝน,RAIN,ธรรมชาติ (Nature)
+หิมะ,SNOW,ธรรมชาติ (Nature)
+หิน,ROCK,ธรรมชาติ (Nature)
+ดอกไม้,FLOWER,ธรรมชาติ (Nature)
+ท้องฟ้า,SKY,ธรรมชาติ (Nature)
+เมฆ,CLOUD,ธรรมชาติ (Nature)
+แม่น้ำ,RIVER,ธรรมชาติ (Nature)
+ทะเล,SEA,ธรรมชาติ (Nature)
+ภูเขา,MOUNTAIN,ธรรมชาติ (Nature)
+ป่า,FOREST,ธรรมชาติ (Nature)
+ทราย,SAND,ธรรมชาติ (Nature)
+ดิน,SOIL,ธรรมชาติ (Nature)
+หญ้า,GRASS,ธรรมชาติ (Nature)
+ใบไม้,LEAF,ธรรมชาติ (Nature)
+ไฟ,FIRE,ธรรมชาติ (Nature)
+พายุ,STORM,ธรรมชาติ (Nature)
+สายฟ้า,LIGHTNING,ธรรมชาติ (Nature)
+ฟ้าร้อง,THUNDER,ธรรมชาติ (Nature)
+หมอก,FOG,ธรรมชาติ (Nature)
+ควัน,SMOKE,ธรรมชาติ (Nature)
+เกาะ,ISLAND,ธรรมชาติ (Nature)
+ชายหาด,BEACH,ธรรมชาติ (Nature)
+มหาสมุทร,OCEAN,ธรรมชาติ (Nature)
+คลื่น,WAVE,ธรรมชาติ (Nature)
+น้ำตก,WATERFALL,ธรรมชาติ (Nature)
+ทะเลสาบ,LAKE,ธรรมชาติ (Nature)
+ถ้ำ,CAVE,ธรรมชาติ (Nature)
+พุ่มไม้,BUSH,ธรรมชาติ (Nature)
+เถาวัลย์,VINE,ธรรมชาติ (Nature)
+ราก,ROOT,ธรรมชาติ (Nature)
+กิ่งไม้,BRANCH,ธรรมชาติ (Nature)
+เปลือกไม้,BARK,ธรรมชาติ (Nature)
+หนาม,THORN,ธรรมชาติ (Nature)
+เมล็ด,SEED,ธรรมชาติ (Nature)
+แสงแดด,SUNLIGHT,ธรรมชาติ (Nature)
+เงา,SHADOW,ธรรมชาติ (Nature)
+รุ้งกินน้ำ,RAINBOW,ธรรมชาติ (Nature)
+น้ำค้าง,DEW,ธรรมชาติ (Nature)
+น้ำแข็งย้อย,ICICLE,ธรรมชาติ (Nature)
+แผ่นดินไหว,EARTHQUAKE,ธรรมชาติ (Nature)
+น้ำท่วม,FLOOD,ธรรมชาติ (Nature)
+ภูเขาไฟ,VOLCANO,ธรรมชาติ (Nature)
+อวกาศ,SPACE,ธรรมชาติ (Nature)
+โลก,EARTH,ธรรมชาติ (Nature)
+ดาวเคราะห์,PLANET,ธรรมชาติ (Nature)
+ตา,EYE,ร่างกาย (Body)
+หู,EAR,ร่างกาย (Body)
+แขน,ARM,ร่างกาย (Body)
+ขา,LEG,ร่างกาย (Body)
+มือ,HAND,ร่างกาย (Body)
+ศีรษะ,HEAD,ร่างกาย (Body)
+ผม,HAIR,ร่างกาย (Body)
+จมูก,NOSE,ร่างกาย (Body)
+ปาก,MOUTH,ร่างกาย (Body)
+ฟัน,TOOTH,ร่างกาย (Body)
+ลิ้น,TONGUE,ร่างกาย (Body)
+คอ,NECK,ร่างกาย (Body)
+ไหล่,SHOULDER,ร่างกาย (Body)
+นิ้วมือ,FINGER,ร่างกาย (Body)
+นิ้วเท้า,TOE,ร่างกาย (Body)
+เท้า,FOOT,ร่างกาย (Body)
+เข่า,KNEE,ร่างกาย (Body)
+หลัง,BACK,ร่างกาย (Body)
+ท้อง,STOMACH,ร่างกาย (Body)
+หัวใจ,HEART,ร่างกาย (Body)
+ใบหน้า,FACE,ร่างกาย (Body)
+แก้ม,CHEEK,ร่างกาย (Body)
+คาง,CHIN,ร่างกาย (Body)
+ริมฝีปาก,LIP,ร่างกาย (Body)
+คิ้ว,EYEBROW,ร่างกาย (Body)
+ขนตา,EYELASH,ร่างกาย (Body)
+หน้าผาก,FOREHEAD,ร่างกาย (Body)
+สมอง,BRAIN,ร่างกาย (Body)
+เลือด,BLOOD,ร่างกาย (Body)
+กระดูก,BONE,ร่างกาย (Body)
+ผิวหนัง,SKIN,ร่างกาย (Body)
+กล้ามเนื้อ,MUSCLE,ร่างกาย (Body)
+ปอด,LUNG,ร่างกาย (Body)
+ตับ,LIVER,ร่างกาย (Body)
+ไต,KIDNEY,ร่างกาย (Body)
+ลำไส้,INTESTINE,ร่างกาย (Body)
+ข้อศอก,ELBOW,ร่างกาย (Body)
+ข้อมือ,WRIST,ร่างกาย (Body)
+ข้อเท้า,ANKLE,ร่างกาย (Body)
+ส้นเท้า,HEEL,ร่างกาย (Body)
+เล็บ,NAIL,ร่างกาย (Body)
+นิ้วหัวแม่มือ,THUMB,ร่างกาย (Body)
+เต้านม,BREAST,ร่างกาย (Body)
+เอว,WAIST,ร่างกาย (Body)
+สะโพก,HIP,ร่างกาย (Body)
+หน้าอก,CHEST,ร่างกาย (Body)
+กระเพาะอาหาร,STOMACH,ร่างกาย (Body)
+น้ำตา,TEAR,ร่างกาย (Body)
+เหงื่อ,SWEAT,ร่างกาย (Body)
+น้ำลาย,SALIVA,ร่างกาย (Body)
+บ้าน,HOUSE,สถานที่ (Places)
+โรงเรียน,SCHOOL,สถานที่ (Places)
+วัด,TEMPLE,สถานที่ (Places)
+ตลาด,MARKET,สถานที่ (Places)
+โรงพยาบาล,HOSPITAL,สถานที่ (Places)
+สวนสาธารณะ,PARK,สถานที่ (Places)
+สวนสัตว์,ZOO,สถานที่ (Places)
+ธนาคาร,BANK,สถานที่ (Places)
+ร้านอาหาร,RESTAURANT,สถานที่ (Places)
+สนามบิน,AIRPORT,สถานที่ (Places)
+สถานีตำรวจ,POLICE,สถานที่ (Places)
+เมือง,CITY,สถานที่ (Places)
+ประเทศ,COUNTRY,สถานที่ (Places)
+ห้องเรียน,CLASSROOM,สถานที่ (Places)
+ห้องสมุด,LIBRARY,สถานที่ (Places)
+โรงภาพยนตร์,CINEMA,สถานที่ (Places)
+ฟาร์ม,FARM,สถานที่ (Places)
+หมู่บ้าน,VILLAGE,สถานที่ (Places)
+ถนน,STREET,สถานที่ (Places)
+โรงแรม,HOTEL,สถานที่ (Places)
+สระว่ายน้ำ,POOL,สถานที่ (Places)
+ชายหาด,BEACH,สถานที่ (Places)
+สถานีรถไฟ,STATION,สถานที่ (Places)
+ป้ายรถเมล์,BUSSTOP,สถานที่ (Places)
+พิพิธภัณฑ์,MUSEUM,สถานที่ (Places)
+ห้างสรรพสินค้า,MALL,สถานที่ (Places)
+ร้านกาแฟ,CAFE,สถานที่ (Places)
+ร้านหนังสือ,BOOKSTORE,สถานที่ (Places)
+ร้านเบเกอรี่,BAKERY,สถานที่ (Places)
+ร้านขายยา,PHARMACY,สถานที่ (Places)
+คลินิก,CLINIC,สถานที่ (Places)
+ที่ทำการไปรษณีย์,POSTOFFICE,สถานที่ (Places)
+สถานีดับเพลิง,FIREBASE,สถานที่ (Places)
+ปั๊มน้ำมัน,GASSTATION,สถานที่ (Places)
+โรงงาน,FACTORY,สถานที่ (Places)
+สนามกีฬา,STADIUM,สถานที่ (Places)
+ยิม,GYM,สถานที่ (Places)
+โบสถ์,CHURCH,สถานที่ (Places)
+มัสยิด,MOSQUE,สถานที่ (Places)
+คลอง,CANAL,สถานที่ (Places)
+สะพาน,BRIDGE,สถานที่ (Places)
+ท่าเรือ,PORT,สถานที่ (Places)
+ปราสาท,CASTLE,สถานที่ (Places)
+พระราชวัง,PALACE,สถานที่ (Places)
+เต็นท์,TENT,สถานที่ (Places)
+แคมป์,CAMP,สถานที่ (Places)
+ห้องนอน,BEDROOM,สถานที่ (Places)
+ห้องน้ำ,BATHROOM,สถานที่ (Places)
+ห้องครัว,KITCHEN,สถานที่ (Places)
+ห้องนั่งเล่น,LIVINGROOM,สถานที่ (Places)
+รถยนต์,CAR,ยานพาหนะ (Vehicles)
+รถบัส,BUS,ยานพาหนะ (Vehicles)
+รถไฟ,TRAIN,ยานพาหนะ (Vehicles)
+เรือ,BOAT,ยานพาหนะ (Vehicles)
+เครื่องบิน,AIRPLANE,ยานพาหนะ (Vehicles)
+จักรยาน,BICYCLE,ยานพาหนะ (Vehicles)
+มอเตอร์ไซค์,MOTORCYCLE,ยานพาหนะ (Vehicles)
+รถบรรทุก,TRUCK,ยานพาหนะ (Vehicles)
+รถตู้,VAN,ยานพาหนะ (Vehicles)
+เฮลิคอปเตอร์,HELICOPTER,ยานพาหนะ (Vehicles)
+เรือดำน้ำ,SUBMARINE,ยานพาหนะ (Vehicles)
+จรวด,ROCKET,ยานพาหนะ (Vehicles)
+รถแท็กซี่,TAXI,ยานพาหนะ (Vehicles)
+รถพยาบาล,AMBULANCE,ยานพาหนะ (Vehicles)
+รถตำรวจ,POLICECAR,ยานพาหนะ (Vehicles)
+รถดับเพลิง,FIRETRUCK,ยานพาหนะ (Vehicles)
+รถจี๊ป,JEEP,ยานพาหนะ (Vehicles)
+รถลาก,TOWTRUCK,ยานพาหนะ (Vehicles)
+รถแทรกเตอร์,TRACTOR,ยานพาหนะ (Vehicles)
+รถถัง,TANK,ยานพาหนะ (Vehicles)
+รถเข็น,CART,ยานพาหนะ (Vehicles)
+สเก็ตบอร์ด,SKATEBOARD,ยานพาหนะ (Vehicles)
+สกู๊ตเตอร์,SCOOTER,ยานพาหนะ (Vehicles)
+เรือใบ,SAILBOAT,ยานพาหนะ (Vehicles)
+เรือสำราญ,SHIP,ยานพาหนะ (Vehicles)
+หมวก,HAT,เครื่องแต่งกาย (Clothes)
+รองเท้า,SHOES,เครื่องแต่งกาย (Clothes)
+เสื้อเชิ้ต,SHIRT,เครื่องแต่งกาย (Clothes)
+กระโปรง,SKIRT,เครื่องแต่งกาย (Clothes)
+กางเกงขาสั้น,SHORTS,เครื่องแต่งกาย (Clothes)
+กางเกงขายาว,PANTS,เครื่องแต่งกาย (Clothes)
+ถุงเท้า,SOCKS,เครื่องแต่งกาย (Clothes)
+แจ็คเก็ต,JACKET,เครื่องแต่งกาย (Clothes)
+เสื้อยืด,TSHIRT,เครื่องแต่งกาย (Clothes)
+ชุดเดรส,DRESS,เครื่องแต่งกาย (Clothes)
+กางเกงยีนส์,JEANS,เครื่องแต่งกาย (Clothes)
+เสื้อกันหนาว,SWEATER,เครื่องแต่งกาย (Clothes)
+เสื้อโค้ท,COAT,เครื่องแต่งกาย (Clothes)
+ชุดสูท,SUIT,เครื่องแต่งกาย (Clothes)
+เนคไท,TIE,เครื่องแต่งกาย (Clothes)
+เข็มขัด,BELT,เครื่องแต่งกาย (Clothes)
+ถุงมือ,GLOVES,เครื่องแต่งกาย (Clothes)
+ผ้าพันคอ,SCARF,เครื่องแต่งกาย (Clothes)
+ชุดชั้นใน,UNDERWEAR,เครื่องแต่งกาย (Clothes)
+ชุดว่ายน้ำ,SWIMSUIT,เครื่องแต่งกาย (Clothes)
+ชุดนอน,PAJAMAS,เครื่องแต่งกาย (Clothes)
+เสื้อกันฝน,RAINCOAT,เครื่องแต่งกาย (Clothes)
+หมวกแก๊ป,CAP,เครื่องแต่งกาย (Clothes)
+รองเท้าแตะ,SANDALS,เครื่องแต่งกาย (Clothes)
+รองเท้าบูท,BOOTS,เครื่องแต่งกาย (Clothes)
+รองเท้าผ้าใบ,SNEAKERS,เครื่องแต่งกาย (Clothes)
+กระเป๋าถือ,HANDBAG,เครื่องแต่งกาย (Clothes)
+เป้สะพายหลัง,BACKPACK,เครื่องแต่งกาย (Clothes)
+ร่ม,UMBRELLA,เครื่องแต่งกาย (Clothes)
+พ่อ,FATHER,ครอบครัว (Family)
+แม่,MOTHER,ครอบครัว (Family)
+ลูกชาย,SON,ครอบครัว (Family)
+ลูกสาว,DAUGHTER,ครอบครัว (Family)
+พี่ชาย,BROTHER,ครอบครัว (Family)
+น้องสาว,SISTER,ครอบครัว (Family)
+ปู่,GRANDFATHER,ครอบครัว (Family)
+ย่า,GRANDMOTHER,ครอบครัว (Family)
+ลุง,UNCLE,ครอบครัว (Family)
+ป้า,AUNT,ครอบครัว (Family)
+หลานชาย,NEPHEW,ครอบครัว (Family)
+หลานสาว,NIECE,ครอบครัว (Family)
+ลูกพี่ลูกน้อง,COUSIN,ครอบครัว (Family)
+สามี,HUSBAND,ครอบครัว (Family)
+ภรรยา,WIFE,ครอบครัว (Family)
+เด็กทารก,BABY,ครอบครัว (Family)
+เด็ก,CHILD,ครอบครัว (Family)
+เด็กๆ,CHILDREN,ครอบครัว (Family)
+วัยรุ่น,TEENAGER,ครอบครัว (Family)
+ผู้ใหญ่,ADULT,ครอบครัว (Family)
+ผู้ชาย,MAN,ครอบครัว (Family)
+ผู้หญิง,WOMAN,ครอบครัว (Family)
+เด็กผู้ชาย,BOY,ครอบครัว (Family)
+เด็กผู้หญิง,GIRL,ครอบครัว (Family)
+เพื่อน,FRIEND,ครอบครัว (Family)
+ครู,TEACHER,อาชีพ (Jobs)
+นักเรียน,STUDENT,อาชีพ (Jobs)
+หมอ,DOCTOR,อาชีพ (Jobs)
+พยาบาล,NURSE,อาชีพ (Jobs)
+ตำรวจ,POLICE,อาชีพ (Jobs)
+ทหาร,SOLDIER,อาชีพ (Jobs)
+ชาวนา,FARMER,อาชีพ (Jobs)
+นักร้อง,SINGER,อาชีพ (Jobs)
+นักแสดง,ACTOR,อาชีพ (Jobs)
+พ่อครัว,CHEF,อาชีพ (Jobs)
+คนขับรถ,DRIVER,อาชีพ (Jobs)
+นักบิน,PILOT,อาชีพ (Jobs)
+นักดับเพลิง,FIREMAN,อาชีพ (Jobs)
+บุรุษไปรษณีย์,POSTMAN,อาชีพ (Jobs)
+นักวิทยาศาสตร์,SCIENTIST,อาชีพ (Jobs)
+ช่างไม้,CARPENTER,อาชีพ (Jobs)
+ช่างยนต์,MECHANIC,อาชีพ (Jobs)
+วิศวกร,ENGINEER,อาชีพ (Jobs)
+สถาปนิก,ARCHITECT,อาชีพ (Jobs)
+ทันตแพทย์,DENTIST,อาชีพ (Jobs)
+สัตว์แพทย์,VET,อาชีพ (Jobs)
+ช่างตัดผม,BARBER,อาชีพ (Jobs)
+พนักงานเสิร์ฟ,WAITER,อาชีพ (Jobs)
+ช่างภาพ,PHOTOGRAPHER,อาชีพ (Jobs)
+นักเขียน,WRITER,อาชีพ (Jobs)
+นักข่าว,REPORTER,อาชีพ (Jobs)
+นักดนตรี,MUSICIAN,อาชีพ (Jobs)
+ศิลปิน,ARTIST,อาชีพ (Jobs)
+นักกีฬา,ATHLETE,อาชีพ (Jobs)
+วิ่ง,RUN,คำกริยา (Verbs)
+เดิน,WALK,คำกริยา (Verbs)
+กระโดด,JUMP,คำกริยา (Verbs)
+นั่ง,SIT,คำกริยา (Verbs)
+ยืน,STAND,คำกริยา (Verbs)
+ว่ายน้ำ,SWIM,คำกริยา (Verbs)
+บิน,FLY,คำกริยา (Verbs)
+กิน,EAT,คำกริยา (Verbs)
+ดื่ม,DRINK,คำกริยา (Verbs)
+นอนหลับ,SLEEP,คำกริยา (Verbs)
+อ่าน,READ,คำกริยา (Verbs)
+เขียน,WRITE,คำกริยา (Verbs)
+พูด,SPEAK,คำกริยา (Verbs)
+ฟัง,LISTEN,คำกริยา (Verbs)
+มองดู,LOOK,คำกริยา (Verbs)
+เล่น,PLAY,คำกริยา (Verbs)
+ทำงาน,WORK,คำกริยา (Verbs)
+ร้องเพลง,SING,คำกริยา (Verbs)
+เต้น,DANCE,คำกริยา (Verbs)
+วาดรูป,DRAW,คำกริยา (Verbs)
+ซื้อ,BUY,คำกริยา (Verbs)
+ขาย,SELL,คำกริยา (Verbs)
+ไป,GO,คำกริยา (Verbs)
+มา,COME,คำกริยา (Verbs)
+หยุด,STOP,คำกริยา (Verbs)
+เปิด,OPEN,คำกริยา (Verbs)
+ปิด,CLOSE,คำกริยา (Verbs)
+ยิ้ม,SMILE,คำกริยา (Verbs)
+ร้องไห้,CRY,คำกริยา (Verbs)
+คิด,THINK,คำกริยา (Verbs)
+หัวเราะ,LAUGH,คำกริยา (Verbs)
+ว่ายน้ำ,SWIM,คำกริยา (Verbs)
+ปีน,CLIMB,คำกริยา (Verbs)
+ผลัก,PUSH,คำกริยา (Verbs)
+ดึง,PULL,คำกริยา (Verbs)
+โยน,THROW,คำกริยา (Verbs)
+จับ,CATCH,คำกริยา (Verbs)
+เตะ,KICK,คำกริยา (Verbs)
+ตี,HIT,คำกริยา (Verbs)
+ซ่อน,HIDE,คำกริยา (Verbs)
+ค้นหา,FIND,คำกริยา (Verbs)
+ให้,GIVE,คำกริยา (Verbs)
+รับ,TAKE,คำกริยา (Verbs)
+ทำ,MAKE,คำกริยา (Verbs)
+สร้าง,BUILD,คำกริยา (Verbs)
+ตัด,CUT,คำกริยา (Verbs)
+ล้าง,WASH,คำกริยา (Verbs)
+ทำความสะอาด,CLEAN,คำกริยา (Verbs)
+ปรุงอาหาร,COOK,คำกริยา (Verbs)
+ขับรถ,DRIVE,คำกริยา (Verbs)
+ขี่,RIDE,คำกริยา (Verbs)
+บิน,FLY,คำกริยา (Verbs)
+รอ,WAIT,คำกริยา (Verbs)
+ถาม,ASK,คำกริยา (Verbs)
+ตอบ,ANSWER,คำกริยา (Verbs)
+ช่วย,HELP,คำกริยา (Verbs)
+เรียน,STUDY,คำกริยา (Verbs)
+สอน,TEACH,คำกริยา (Verbs)
+รัก,LOVE,คำกริยา (Verbs)
+เกลียด,HATE,คำกริยา (Verbs)
+ชอบ,LIKE,คำกริยา (Verbs)
+ต้องการ,WANT,คำกริยา (Verbs)
+ต้องการ(จำเป็น),NEED,คำกริยา (Verbs)
+พยายาม,TRY,คำกริยา (Verbs)
+รู้,KNOW,คำกริยา (Verbs)
+ลืม,FORGET,คำกริยา (Verbs)
+จำได้,REMEMBER,คำกริยา (Verbs)
+รู้สึก,FEEL,คำกริยา (Verbs)
+เห็น,SEE,คำกริยา (Verbs)
+ได้ยิน,HEAR,คำกริยา (Verbs)
+ดม,SMELL,คำกริยา (Verbs)
+ชิม,TASTE,คำกริยา (Verbs)
+สัมผัส,TOUCH,คำกริยา (Verbs)
+ดี,GOOD,คำคุณศัพท์ (Adjectives)
+เลว,BAD,คำคุณศัพท์ (Adjectives)
+ใหญ่,BIG,คำคุณศัพท์ (Adjectives)
+เล็ก,SMALL,คำคุณศัพท์ (Adjectives)
+สูง,TALL,คำคุณศัพท์ (Adjectives)
+เตี้ย,SHORT,คำคุณศัพท์ (Adjectives)
+ยาว,LONG,คำคุณศัพท์ (Adjectives)
+ร้อน,HOT,คำคุณศัพท์ (Adjectives)
+เย็น,COLD,คำคุณศัพท์ (Adjectives)
+เร็ว,FAST,คำคุณศัพท์ (Adjectives)
+ช้า,SLOW,คำคุณศัพท์ (Adjectives)
+ใหม่,NEW,คำคุณศัพท์ (Adjectives)
+เก่า,OLD,คำคุณศัพท์ (Adjectives)
+สวย,BEAUTIFUL,คำคุณศัพท์ (Adjectives)
+น่าเกลียด,UGLY,คำคุณศัพท์ (Adjectives)
+สะอาด,CLEAN,คำคุณศัพท์ (Adjectives)
+สกปรก,DIRTY,คำคุณศัพท์ (Adjectives)
+มีความสุข,HAPPY,คำคุณศัพท์ (Adjectives)
+เศร้า,SAD,คำคุณศัพท์ (Adjectives)
+โกรธ,ANGRY,คำคุณศัพท์ (Adjectives)
+หิว,HUNGRY,คำคุณศัพท์ (Adjectives)
+อิ่ม,FULL,คำคุณศัพท์ (Adjectives)
+เหนื่อย,TIRED,คำคุณศัพท์ (Adjectives)
+หนัก,HEAVY,คำคุณศัพท์ (Adjectives)
+เบา,LIGHT,คำคุณศัพท์ (Adjectives)
+ยาก,HARD,คำคุณศัพท์ (Adjectives)
+ง่าย,EASY,คำคุณศัพท์ (Adjectives)
+นุ่ม,SOFT,คำคุณศัพท์ (Adjectives)
+แข็ง,HARD,คำคุณศัพท์ (Adjectives)
+เปียก,WET,คำคุณศัพท์ (Adjectives)
+แห้ง,DRY,คำคุณศัพท์ (Adjectives)
+อ้วน,FAT,คำคุณศัพท์ (Adjectives)
+ผอม,THIN,คำคุณศัพท์ (Adjectives)
+รวย,RICH,คำคุณศัพท์ (Adjectives)
+จน,POOR,คำคุณศัพท์ (Adjectives)
+ฉลาด,SMART,คำคุณศัพท์ (Adjectives)
+โง่,STUPID,คำคุณศัพท์ (Adjectives)
+กล้าหาญ,BRAVE,คำคุณศัพท์ (Adjectives)
+ขี้ขลาด,COWARD,คำคุณศัพท์ (Adjectives)
+ขยัน,DILIGENT,คำคุณศัพท์ (Adjectives)
+ขี้เกียจ,LAZY,คำคุณศัพท์ (Adjectives)
+น่ารัก,CUTE,คำคุณศัพท์ (Adjectives)
+หล่อ,HANDSOME,คำคุณศัพท์ (Adjectives)
+น่ากลัว,SCARY,คำคุณศัพท์ (Adjectives)
+ตลก,FUNNY,คำคุณศัพท์ (Adjectives)
+น่าเบื่อ,BORING,คำคุณศัพท์ (Adjectives)
+อันตราย,DANGEROUS,คำคุณศัพท์ (Adjectives)
+ปลอดภัย,SAFE,คำคุณศัพท์ (Adjectives)
+แพง,EXPENSIVE,คำคุณศัพท์ (Adjectives)
+ถูก,CHEAP,คำคุณศัพท์ (Adjectives)
+ว่างเปล่า,EMPTY,คำคุณศัพท์ (Adjectives)
+เต็ม,FULL,คำคุณศัพท์ (Adjectives)
+หนา,THICK,คำคุณศัพท์ (Adjectives)
+บาง,THIN,คำคุณศัพท์ (Adjectives)
+กว้าง,WIDE,คำคุณศัพท์ (Adjectives)
+แคบ,NARROW,คำคุณศัพท์ (Adjectives)
+ลึก,DEEP,คำคุณศัพท์ (Adjectives)
+ตื้น,SHALLOW,คำคุณศัพท์ (Adjectives)
+วงกลม,CIRCLE,รูปทรง (Shapes)
+สี่เหลี่ยมจัตุรัส,SQUARE,รูปทรง (Shapes)
+สี่เหลี่ยมผืนผ้า,RECTANGLE,รูปทรง (Shapes)
+สามเหลี่ยม,TRIANGLE,รูปทรง (Shapes)
+วงรี,OVAL,รูปทรง (Shapes)
+ดาว,STAR,รูปทรง (Shapes)
+หัวใจ,HEART,รูปทรง (Shapes)
+เพชร,DIAMOND,รูปทรง (Shapes)
+เส้นตรง,LINE,รูปทรง (Shapes)
+จุด,DOT,รูปทรง (Shapes)
+วันจันทร์,MONDAY,วันและเวลา (Days & Time)
+วันอังคาร,TUESDAY,วันและเวลา (Days & Time)
+วันพุธ,WEDNESDAY,วันและเวลา (Days & Time)
+วันพฤหัสบดี,THURSDAY,วันและเวลา (Days & Time)
+วันศุกร์,FRIDAY,วันและเวลา (Days & Time)
+วันเสาร์,SATURDAY,วันและเวลา (Days & Time)
+วันอาทิตย์,SUNDAY,วันและเวลา (Days & Time)
+วันนี้,TODAY,วันและเวลา (Days & Time)
+พรุ่งนี้,TOMORROW,วันและเวลา (Days & Time)
+เมื่อวาน,YESTERDAY,วันและเวลา (Days & Time)
+เช้า,MORNING,วันและเวลา (Days & Time)
+บ่าย,AFTERNOON,วันและเวลา (Days & Time)
+เย็น,EVENING,วันและเวลา (Days & Time)
+กลางคืน,NIGHT,วันและเวลา (Days & Time)
+สัปดาห์,WEEK,วันและเวลา (Days & Time)
+เดือน,MONTH,วันและเวลา (Days & Time)
+ปี,YEAR,วันและเวลา (Days & Time)
+เวลา,TIME,วันและเวลา (Days & Time)
+ชั่วโมง,HOUR,วันและเวลา (Days & Time)
+นาที,MINUTE,วันและเวลา (Days & Time)
+วินาที,SECOND,วันและเวลา (Days & Time)
+มกราคม,JANUARY,วันและเวลา (Days & Time)
+กุมภาพันธ์,FEBRUARY,วันและเวลา (Days & Time)
+มีนาคม,MARCH,วันและเวลา (Days & Time)
+เมษายน,APRIL,วันและเวลา (Days & Time)
+พฤษภาคม,MAY,วันและเวลา (Days & Time)
+มิถุนายน,JUNE,วันและเวลา (Days & Time)
+กรกฎาคม,JULY,วันและเวลา (Days & Time)
+สิงหาคม,AUGUST,วันและเวลา (Days & Time)
+กันยายน,SEPTEMBER,วันและเวลา (Days & Time)
+ตุลาคม,OCTOBER,วันและเวลา (Days & Time)
+พฤศจิกายน,NOVEMBER,วันและเวลา (Days & Time)
+ธันวาคม,DECEMBER,วันและเวลา (Days & Time)
+ฤดูร้อน,SUMMER,วันและเวลา (Days & Time)
+ฤดูหนาว,WINTER,วันและเวลา (Days & Time)
+ฤดูใบไม้ผลิ,SPRING,วันและเวลา (Days & Time)
+ฤดูใบไม้ร่วง,AUTUMN,วันและเวลา (Days & Time)
+ฟุตบอล,FOOTBALL,กีฬา (Sports)
+บาสเกตบอล,BASKETBALL,กีฬา (Sports)
+วอลเลย์บอล,VOLLEYBALL,กีฬา (Sports)
+เทนนิส,TENNIS,กีฬา (Sports)
+แบดมินตัน,BADMINTON,กีฬา (Sports)
+ว่ายน้ำ,SWIMMING,กีฬา (Sports)
+วิ่ง,RUNNING,กีฬา (Sports)
+ปั่นจักรยาน,CYCLING,กีฬา (Sports)
+มวย,BOXING,กีฬา (Sports)
+กอล์ฟ,GOLF,กีฬา (Sports)
+เสมอ,ALWAYS,กริยาวิเศษณ์ (Adverbs)
+ไม่เคย,NEVER,กริยาวิเศษณ์ (Adverbs)
+บ่อยๆ,OFTEN,กริยาวิเศษณ์ (Adverbs)
+บางครั้ง,SOMETIMES,กริยาวิเศษณ์ (Adverbs)
+โดยปกติ,USUALLY,กริยาวิเศษณ์ (Adverbs)
+อย่างรวดเร็ว,QUICKLY,กริยาวิเศษณ์ (Adverbs)
+อย่างช้าๆ,SLOWLY,กริยาวิเศษณ์ (Adverbs)
+อย่างดัง,LOUDLY,กริยาวิเศษณ์ (Adverbs)
+อย่างเงียบๆ,QUIETLY,กริยาวิเศษณ์ (Adverbs)
+อย่างระมัดระวัง,CAREFULLY,กริยาวิเศษณ์ (Adverbs)
+ใน,IN,คำบุพบท (Prepositions)
+บน,ON,คำบุพบท (Prepositions)
+ใต้,UNDER,คำบุพบท (Prepositions)
+ข้างหลัง,BEHIND,คำบุพบท (Prepositions)
+ถัดไป,NEXT,คำบุพบท (Prepositions)
+ระหว่าง,BETWEEN,คำบุพบท (Prepositions)
+ข้างหน้า,INFRONT,คำบุพบท (Prepositions)
+เหนือ,ABOVE,คำบุพบท (Prepositions)
+ต่ำกว่า,BELOW,คำบุพบท (Prepositions)
+ใกล้,NEAR,คำบุพบท (Prepositions)
+ไกล,FAR,คำบุพบท (Prepositions)
+ฉัน,I,คำสรรพนาม (Pronouns)
+คุณ,YOU,คำสรรพนาม (Pronouns)
+พวกเรา,WE,คำสรรพนาม (Pronouns)
+พวกเขา,THEY,คำสรรพนาม (Pronouns)
+เขา(ผู้ชาย),HE,คำสรรพนาม (Pronouns)
+เธอ(ผู้หญิง),SHE,คำสรรพนาม (Pronouns)
+มัน,IT,คำสรรพนาม (Pronouns)
+ใคร,WHO,คำถาม (Question Words)
+อะไร,WHAT,คำถาม (Question Words)
+ที่ไหน,WHERE,คำถาม (Question Words)
+เมื่อไหร่,WHEN,คำถาม (Question Words)
+ทำไม,WHY,คำถาม (Question Words)
+อย่างไร,HOW,คำถาม (Question Words)
+ซีเรียล,CEREAL,อาหาร (Food)
+แยม,JAM,อาหาร (Food)
+ถั่ว,BEAN,อาหาร (Food)
+ข้าวโพด,CORN,อาหาร (Food)
+ถั่วลันเตา,PEA,อาหาร (Food)
+ถั่วลิสง,NUT,อาหาร (Food)
+เครื่องเทศ,SPICE,อาหาร (Food)
+ขนมอม,CANDY,อาหาร (Food)
+มันฝรั่งทอด,CHIPS,อาหาร (Food)
+ข้าวโพดคั่ว,POPCORN,อาหาร (Food)
+โดนัท,DONUT,อาหาร (Food)
+พาย,PIE,อาหาร (Food)
+ทาร์ต,TART,อาหาร (Food)
+หมากฝรั่ง,GUM,อาหาร (Food)
+เยลลี่,JELLY,อาหาร (Food)
+ซูชิ,SUSHI,อาหาร (Food)
+แกงกะหรี่,CURRY,อาหาร (Food)
+กระดาน,BOARD,โรงเรียน (School)
+ชอล์ก,CHALK,โรงเรียน (School)
+ปากกามาร์กเกอร์,MARKER,โรงเรียน (School)
+สีเทียน,CRAYON,โรงเรียน (School)
+สีน้ำ,PAINT,โรงเรียน (School)
+พู่กัน,BRUSH,โรงเรียน (School)
+ดินน้ำมัน,CLAY,โรงเรียน (School)
+กระดาษ,PAPER,โรงเรียน (School)
+หน้ากระดาษ,PAGE,โรงเรียน (School)
+ไม้กวาด,BROOM,ของใช้ในบ้าน (Household)
+ไม้ถูพื้น,MOP,ของใช้ในบ้าน (Household)
+ถังน้ำ,BUCKET,ของใช้ในบ้าน (Household)
+ขยะ,TRASH,ของใช้ในบ้าน (Household)
+ฝุ่น,DUST,ของใช้ในบ้าน (Household)
+ผ้าปูที่นอน,SHEET,ของใช้ในบ้าน (Household)
+เสื่อ,MAT,ของใช้ในบ้าน (Household)
+พรม,RUG,ของใช้ในบ้าน (Household)
+หลอดไฟ,BULB,ของใช้ในบ้าน (Household)
+ปลั๊กไฟ,PLUG,ของใช้ในบ้าน (Household)
+ส้นเท้า,HEEL,เครื่องแต่งกาย (Clothes)
+เชือกรองเท้า,LACE,เครื่องแต่งกาย (Clothes)
+ซิป,ZIPPER,เครื่องแต่งกาย (Clothes)
+กระดุม,BUTTON,เครื่องแต่งกาย (Clothes)
+กระเป๋าเสื้อ,POCKET,เครื่องแต่งกาย (Clothes)
+ปกเสื้อ,COLLAR,เครื่องแต่งกาย (Clothes)
+แขนเสื้อ,SLEEVE,เครื่องแต่งกาย (Clothes)
+เสื้อกั๊ก,VEST,เครื่องแต่งกาย (Clothes)
+ฟาร์ม,FARM,สถานที่ (Places)
+โรงนา,BARN,สถานที่ (Places)
+ทุ่งนา,FIELD,สถานที่ (Places)
+สนามหญ้า,YARD,สถานที่ (Places)
+สวน,GARDEN,สถานที่ (Places)
+ลานบ้าน,PATIO,สถานที่ (Places)
+สระน้ำ,POOL,สถานที่ (Places)
+บ่อน้ำ,POND,สถานที่ (Places)
+ร้านค้า,SHOP,สถานที่ (Places)
+เถ้าถ่าน,ASH,ธรรมชาติ (Nature)
+โคลน,MUD,ธรรมชาติ (Nature)
+เนินเขา,HILL,ธรรมชาติ (Nature)
+หลุม,HOLE,ธรรมชาติ (Nature)
+พายุ,STORM,ธรรมชาติ (Nature)
+หมอก,FOG,ธรรมชาติ (Nature)
+ควัน,SMOKE,ธรรมชาติ (Nature)
+กระดูก,BONE,ร่างกาย (Body)
+เนื้อ,FLESH,ร่างกาย (Body)
+เส้นเลือด,VEIN,ร่างกาย (Body)
+ปอด,LUNG,ร่างกาย (Body)
+กะโหลก,SKULL,ร่างกาย (Body)
+กระดูกสันหลัง,SPINE,ร่างกาย (Body)
+ซี่โครง,RIB,ร่างกาย (Body)
+ข้อต่อ,JOINT,ร่างกาย (Body)
+กล้ามเนื้อ,MUSCLE,ร่างกาย (Body)
+ไขมัน,FAT,ร่างกาย (Body)
+เหงื่อ,SWEAT,ร่างกาย (Body)
+น้ำตา,TEAR,ร่างกาย (Body)
+น้ำลาย,SPIT,ร่างกาย (Body)
+อบ,BAKE,คำกริยา (Verbs)
+ต้ม,BOIL,คำกริยา (Verbs)
+ทอด,FRY,คำกริยา (Verbs)
+ย่าง,GRILL,คำกริยา (Verbs)
+คั่ว,ROAST,คำกริยา (Verbs)
+สับ,CHOP,คำกริยา (Verbs)
+หั่น,SLICE,คำกริยา (Verbs)
+ปอกเปลือก,PEEL,คำกริยา (Verbs)
+คน(ให้เข้ากัน),STIR,คำกริยา (Verbs)
+ผสม,MIX,คำกริยา (Verbs)
+ปั่น,BLEND,คำกริยา (Verbs)
+เท,POUR,คำกริยา (Verbs)
+ทำหก,SPILL,คำกริยา (Verbs)
+หยิบ,PICK,คำกริยา (Verbs)
+ถือ,HOLD,คำกริยา (Verbs)
+คว้า,GRAB,คำกริยา (Verbs)
+ผลัก,PUSH,คำกริยา (Verbs)
+ดึง,PULL,คำกริยา (Verbs)
+ลาก,DRAG,คำกริยา (Verbs)
+ยก,LIFT,คำกริยา (Verbs)
+ทำตก,DROP,คำกริยา (Verbs)
+ล้ม,FALL,คำกริยา (Verbs)
+ลื่น,SLIP,คำกริยา (Verbs)
+ไถล,SLIDE,คำกริยา (Verbs)
+กลิ้ง,ROLL,คำกริยา (Verbs)
+หมุน,SPIN,คำกริยา (Verbs)
+เลี้ยว,TURN,คำกริยา (Verbs)
+บิด,TWIST,คำกริยา (Verbs)
+โค้งงอ,BEND,คำกริยา (Verbs)
+พับ,FOLD,คำกริยา (Verbs)
+ทำแตก,BREAK,คำกริยา (Verbs)
+ซ่อม,FIX,คำกริยา (Verbs)
+ผูก,TIE,คำกริยา (Verbs)
+เงียบสงบ,SILENT,คำคุณศัพท์ (Adjectives)
+เสียงดัง,NOISY,คำคุณศัพท์ (Adjectives)
+สงบ,CALM,คำคุณศัพท์ (Adjectives)
+ป่าเถื่อน,WILD,คำคุณศัพท์ (Adjectives)
+เชื่อง,TAME,คำคุณศัพท์ (Adjectives)
+ดุร้าย,FIERCE,คำคุณศัพท์ (Adjectives)
+อ่อนโยน,GENTLE,คำคุณศัพท์ (Adjectives)
+ขรุขระ,ROUGH,คำคุณศัพท์ (Adjectives)
+เรียบเนียน,SMOOTH,คำคุณศัพท์ (Adjectives)
+นุ่มนวล,SOFT,คำคุณศัพท์ (Adjectives)
+หลวม,LOOSE,คำคุณศัพท์ (Adjectives)
+แน่น,TIGHT,คำคุณศัพท์ (Adjectives)
+แหลมคม,SHARP,คำคุณศัพท์ (Adjectives)
+ทื่อ,DULL,คำคุณศัพท์ (Adjectives)
+สว่าง,BRIGHT,คำคุณศัพท์ (Adjectives)
+มืด,DARK,คำคุณศัพท์ (Adjectives)
+สลัว,DIM,คำคุณศัพท์ (Adjectives)
+ชัดเจน,CLEAR,คำคุณศัพท์ (Adjectives)
+พร่ามัว,BLURRY,คำคุณศัพท์ (Adjectives)
+เรียบร้อย,NEAT,คำคุณศัพท์ (Adjectives)
+รก,MESSY,คำคุณศัพท์ (Adjectives)
+ชื้น,DAMP,คำคุณศัพท์ (Adjectives)
+อบอุ่น,WARM,คำคุณศัพท์ (Adjectives)
+เย็นสบาย,COOL,คำคุณศัพท์ (Adjectives)
+หนาวสั่น,CHILLY,คำคุณศัพท์ (Adjectives)
+จุดเริ่มต้น,START,คำศัพท์ทั่วไป (General)
+จุดจบ,END,คำศัพท์ทั่วไป (General)
+บนสุด,TOP,คำศัพท์ทั่วไป (General)
+ล่างสุด,BOTTOM,คำศัพท์ทั่วไป (General)
+ตรงกลาง,CENTER,คำศัพท์ทั่วไป (General)
+ขอบ,EDGE,คำศัพท์ทั่วไป (General)
+มุม,CORNER,คำศัพท์ทั่วไป (General)
+ด้านหน้า,FRONT,คำศัพท์ทั่วไป (General)
+ด้านหลัง,BACK,คำศัพท์ทั่วไป (General)
+ด้านข้าง,SIDE,คำศัพท์ทั่วไป (General)
+ซ้าย,LEFT,คำศัพท์ทั่วไป (General)
+ขวา,RIGHT,คำศัพท์ทั่วไป (General)
+ขึ้น,UP,คำศัพท์ทั่วไป (General)
+ลง,DOWN,คำศัพท์ทั่วไป (General)
+ใกล้ชิด,CLOSE,คำศัพท์ทั่วไป (General)
+ห่างไกล,DISTANT,คำศัพท์ทั่วไป (General)
+ปัจจุบัน,PRESENT,คำศัพท์ทั่วไป (General)
+อดีต,PAST,คำศัพท์ทั่วไป (General)
+อนาคต,FUTURE,คำศัพท์ทั่วไป (General)
+ความรัก,LOVE,ความรู้สึก (Emotions)
+ความเกลียด,HATE,ความรู้สึก (Emotions)
+ความกลัว,FEAR,ความรู้สึก (Emotions)
+ความโกรธ,ANGER,ความรู้สึก (Emotions)
+ความสุข,JOY,ความรู้สึก (Emotions)
+ความเศร้า,SORROW,ความรู้สึก (Emotions)
+รอยยิ้ม,SMILE,ความรู้สึก (Emotions)
+น้ำตา,TEAR,ความรู้สึก (Emotions)
+การกอด,HUG,ความรู้สึก (Emotions)
+การจูบ,KISS,ความรู้สึก (Emotions)
+ความฝัน,DREAM,ความรู้สึก (Emotions)
+ความหวัง,HOPE,ความรู้สึก (Emotions)
+เป้าหมาย,GOAL,ความรู้สึก (Emotions)
+ทักษะ,SKILL,คำศัพท์ทั่วไป (General)
+งาน,JOB,คำศัพท์ทั่วไป (General)
+เงิน,MONEY,คำศัพท์ทั่วไป (General)
+ราคา,PRICE,คำศัพท์ทั่วไป (General)
+ตลาด,MARKET,คำศัพท์ทั่วไป (General)
+ร้านค้า,STORE,คำศัพท์ทั่วไป (General)
+บริษัท,COMPANY,คำศัพท์ทั่วไป (General)
+โรงงาน,FACTORY,คำศัพท์ทั่วไป (General)
+เครื่องจักร,MACHINE,คำศัพท์ทั่วไป (General)
+เครื่องยนต์,ENGINE,คำศัพท์ทั่วไป (General)
+ล้อ,WHEEL,คำศัพท์ทั่วไป (General)
+ปีก,WING,คำศัพท์ทั่วไป (General)
+หาง,TAIL,คำศัพท์ทั่วไป (General)
+เขา,HORN,คำศัพท์ทั่วไป (General)
+กรงเล็บ,CLAW,คำศัพท์ทั่วไป (General)
+จะงอยปาก,BEAK,คำศัพท์ทั่วไป (General)
+ขน(นก),FEATHER,คำศัพท์ทั่วไป (General)
+ขน(สัตว์),FUR,คำศัพท์ทั่วไป (General)
+เกล็ด,SCALE,คำศัพท์ทั่วไป (General)
+เปลือกหอย,SHELL,คำศัพท์ทั่วไป (General)
+รังนก,NEST,คำศัพท์ทั่วไป (General)
+ใยแมงมุม,WEB,คำศัพท์ทั่วไป (General)
+กรง,CAGE,คำศัพท์ทั่วไป (General)
+เชือก,ROPE,คำศัพท์ทั่วไป (General)
+สายไฟ,WIRE,คำศัพท์ทั่วไป (General)
+ท่อ,PIPE,คำศัพท์ทั่วไป (General)
+โซ่,CHAIN,คำศัพท์ทั่วไป (General)
+กุญแจล็อค,LOCK,คำศัพท์ทั่วไป (General)
+ทางเข้า,ENTRANCE,คำศัพท์ทั่วไป (General)
+ทางออก,EXIT,คำศัพท์ทั่วไป (General)
+ป้าย,SIGN,คำศัพท์ทั่วไป (General)
+สัญญาณ,SIGNAL,คำศัพท์ทั่วไป (General)
+ไฟจราจร,TRAFFICLIGHT,คำศัพท์ทั่วไป (General)
+ถนน,ROAD,คำศัพท์ทั่วไป (General)
+ทางหลวง,HIGHWAY,คำศัพท์ทั่วไป (General)
+สะพานลอย,OVERPASS,คำศัพท์ทั่วไป (General)
+อุโมงค์,TUNNEL,คำศัพท์ทั่วไป (General)
+ทางเท้า,SIDEWALK,คำศัพท์ทั่วไป (General)
+คนเดินเท้า,PEDESTRIAN,คำศัพท์ทั่วไป (General)
+ผู้โดยสาร,PASSENGER,คำศัพท์ทั่วไป (General)
+กระเป๋าเดินทาง,LUGGAGE,คำศัพท์ทั่วไป (General)
+ตั๋ว,TICKET,คำศัพท์ทั่วไป (General)
+หนังสือเดินทาง,PASSPORT,คำศัพท์ทั่วไป (General)
+วีซ่า,VISA,คำศัพท์ทั่วไป (General)
+เที่ยวบิน,FLIGHT,คำศัพท์ทั่วไป (General)
+การเดินทาง,JOURNEY,คำศัพท์ทั่วไป (General)
+แผนการ,PLAN,คำศัพท์ทั่วไป (General)
+เหตุผล,REASON,คำศัพท์ทั่วไป (General)
+คำถาม,QUESTION,คำศัพท์ทั่วไป (General)
+คำตอบ,ANSWER,คำศัพท์ทั่วไป (General)
+ปัญหา,PROBLEM,คำศัพท์ทั่วไป (General)
+วิธีแก้,SOLUTION,คำศัพท์ทั่วไป (General)
+ข้อผิดพลาด,MISTAKE,คำศัพท์ทั่วไป (General)
+ความลับ,SECRET,คำศัพท์ทั่วไป (General)
+ความจริง,TRUTH,คำศัพท์ทั่วไป (General)
+คำโกหก,LIE,คำศัพท์ทั่วไป (General)
+ข่าว,NEWS,คำศัพท์ทั่วไป (General)
+เรื่องราว,STORY,คำศัพท์ทั่วไป (General)
+เพลง,SONG,คำศัพท์ทั่วไป (General)
+ภาพยนตร์,MOVIE,คำศัพท์ทั่วไป (General)
+เกม,GAME,คำศัพท์ทั่วไป (General)
+ความสนุก,FUN,คำศัพท์ทั่วไป (General)
+เวทมนตร์,MAGIC,คำศัพท์ทั่วไป (General)
+ผี,GHOST,คำศัพท์ทั่วไป (General)
+สัตว์ประหลาด,MONSTER,คำศัพท์ทั่วไป (General)
+เอเลี่ยน,ALIEN,คำศัพท์ทั่วไป (General)
+หุ่นยนต์,ROBOT,คำศัพท์ทั่วไป (General)
+คอมพิวเตอร์,COMPUTER,คำศัพท์ทั่วไป (General)
+หน้าจอ,SCREEN,คำศัพท์ทั่วไป (General)
+คีย์บอร์ด,KEYBOARD,คำศัพท์ทั่วไป (General)
+เมาส์,MOUSE,คำศัพท์ทั่วไป (General)
+รหัสผ่าน,PASSWORD,คำศัพท์ทั่วไป (General)
+ไวรัส,VIRUS,คำศัพท์ทั่วไป (General)
+อินเทอร์เน็ต,INTERNET,คำศัพท์ทั่วไป (General)
+อีเมล,EMAIL,คำศัพท์ทั่วไป (General)
+ข้อความ,MESSAGE,คำศัพท์ทั่วไป (General)
+จดหมาย,LETTER,คำศัพท์ทั่วไป (General)
+ซองจดหมาย,ENVELOPE,คำศัพท์ทั่วไป (General)
+แสตมป์,STAMP,คำศัพท์ทั่วไป (General)
+กล่องพัสดุ,PACKAGE,คำศัพท์ทั่วไป (General)
+ของขวัญ,GIFT,คำศัพท์ทั่วไป (General)
+งานปาร์ตี้,PARTY,คำศัพท์ทั่วไป (General)
+วันหยุด,HOLIDAY,คำศัพท์ทั่วไป (General)
+วันเกิด,BIRTHDAY,คำศัพท์ทั่วไป (General)
+งานแต่งงาน,WEDDING,คำศัพท์ทั่วไป (General)
+ยา,MEDICINE,คำศัพท์ทั่วไป (General)
+ยาเม็ด,PILL,คำศัพท์ทั่วไป (General)
+พลาสเตอร์,BANDAGE,คำศัพท์ทั่วไป (General)
+เลือด,BLOOD,คำศัพท์ทั่วไป (General)
+กระดูกหัก,FRACTURE,คำศัพท์ทั่วไป (General)
+รอยขีดข่วน,SCRATCH,คำศัพท์ทั่วไป (General)
+รอยช้ำ,BRUISE,คำศัพท์ทั่วไป (General)
+อาการเจ็บปวด,PAIN,คำศัพท์ทั่วไป (General)
+ไข้,FEVER,คำศัพท์ทั่วไป (General)
+ไอ,COUGH,คำศัพท์ทั่วไป (General)
+จาม,SNEEZE,คำศัพท์ทั่วไป (General)
+หวัด,COLD,คำศัพท์ทั่วไป (General)
+สุขภาพ,HEALTH,คำศัพท์ทั่วไป (General)
+พลังงาน,ENERGY,คำศัพท์ทั่วไป (General)
+แบตเตอรี่,BATTERY,คำศัพท์ทั่วไป (General)
+เครื่องชาร์จ,CHARGER,คำศัพท์ทั่วไป (General)
+พลังงานแสงอาทิตย์,SOLAR,คำศัพท์ทั่วไป (General)
+ลม,WIND,คำศัพท์ทั่วไป (General)
+ธรรมชาติ,NATURE,คำศัพท์ทั่วไป (General)
+สิ่งแวดล้อม,ENVIRONMENT,คำศัพท์ทั่วไป (General)
+โลก,EARTH,คำศัพท์ทั่วไป (General)
+อวกาศ,SPACE,คำศัพท์ทั่วไป (General)
+จักรวาล,UNIVERSE,คำศัพท์ทั่วไป (General)
+ดาวเคราะห์,PLANET,คำศัพท์ทั่วไป (General)
+หลุมดำ,BLACKHOLE,คำศัพท์ทั่วไป (General)
+จรวด,ROCKET,คำศัพท์ทั่วไป (General)
+ดาวเทียม,SATELLITE,คำศัพท์ทั่วไป (General)
+กล้องโทรทรรศน์,TELESCOPE,คำศัพท์ทั่วไป (General)
+กล้องจุลทรรศน์,MICROSCOPE,คำศัพท์ทั่วไป (General)
+นักวิทยาศาสตร์,SCIENTIST,คำศัพท์ทั่วไป (General)
+การทดลอง,EXPERIMENT,คำศัพท์ทั่วไป (General)
+สารเคมี,CHEMICAL,คำศัพท์ทั่วไป (General)
+พิษ,POISON,คำศัพท์ทั่วไป (General)
+อันตราย,DANGER,คำศัพท์ทั่วไป (General)
+ความปลอดภัย,SAFETY,คำศัพท์ทั่วไป (General)
+กุญแจ,KEY,คำศัพท์ทั่วไป (General)
+แม่กุญแจ,PADLOCK,คำศัพท์ทั่วไป (General)
+รหัส,CODE,คำศัพท์ทั่วไป (General)
+ความปลอดภัย,SECURITY,คำศัพท์ทั่วไป (General)
+ยาม,GUARD,คำศัพท์ทั่วไป (General)
+ปืน,GUN,คำศัพท์ทั่วไป (General)
+ดาบ,SWORD,คำศัพท์ทั่วไป (General)
+มีด,KNIFE,คำศัพท์ทั่วไป (General)
+โล่,SHIELD,คำศัพท์ทั่วไป (General)
+ชุดเกราะ,ARMOR,คำศัพท์ทั่วไป (General)
+ฮีโร่,HERO,คำศัพท์ทั่วไป (General)
+ตัวร้าย,VILLAIN,คำศัพท์ทั่วไป (General)
+ชัยชนะ,VICTORY,คำศัพท์ทั่วไป (General)
+ความพ่ายแพ้,DEFEAT,คำศัพท์ทั่วไป (General)
+สงคราม,WAR,คำศัพท์ทั่วไป (General)
+สันติภาพ,PEACE,คำศัพท์ทั่วไป (General)
+คณิตศาสตร์,MATH,วิชาเรียน (Subjects)
+วิทยาศาสตร์,SCIENCE,วิชาเรียน (Subjects)
+ประวัติศาสตร์,HISTORY,วิชาเรียน (Subjects)
+ภูมิศาสตร์,GEOGRAPHY,วิชาเรียน (Subjects)
+ศิลปะ,ART,วิชาเรียน (Subjects)
+ดนตรี,MUSIC,วิชาเรียน (Subjects)
+พละศึกษา,PE,วิชาเรียน (Subjects)
+ภาษาอังกฤษ,ENGLISH,วิชาเรียน (Subjects)
+ภาษาไทย,THAI,วิชาเรียน (Subjects)
+กีตาร์,GUITAR,ดนตรี (Music)
+เปียโน,PIANO,ดนตรี (Music)
+ไวโอลิน,VIOLIN,ดนตรี (Music)
+กลอง,DRUM,ดนตรี (Music)
+ฟลุต,FLUTE,ดนตรี (Music)
+ทรัมเป็ต,TRUMPET,ดนตรี (Music)
+เบสบอล,BASEBALL,กีฬา (Sports)
+รักบี้,RUGBY,กีฬา (Sports)
+วอลเลย์บอล,VOLLEYBALL,กีฬา (Sports)
+ปิงปอง,PINGPONG,กีฬา (Sports)
+แบดมินตัน,BADMINTON,กีฬา (Sports)
+หมากรุก,CHESS,กีฬา (Sports)
+ไม้,WOOD,วัสดุ (Materials)
+พลาสติก,PLASTIC,วัสดุ (Materials)
+เหล็ก,IRON,วัสดุ (Materials)
+ทอง,GOLD,วัสดุ (Materials)
+เงิน,SILVER,วัสดุ (Materials)
+แก้ว,GLASS,วัสดุ (Materials)
+กระดาษ,PAPER,วัสดุ (Materials)
+ผ้า,CLOTH,วัสดุ (Materials)
+ยาง,RUBBER,วัสดุ (Materials)
+หนัง,LEATHER,วัสดุ (Materials)
+หิน,STONE,วัสดุ (Materials)
+ตื่นนอน,WAKE,คำกริยา (Verbs)
+อาบน้ำ,BATHE,คำกริยา (Verbs)
+แปรงฟัน,BRUSH,คำกริยา (Verbs)
+สวมใส่,WEAR,คำกริยา (Verbs)
+ล้าง,WASH,คำกริยา (Verbs)
+ทำความสะอาด,CLEAN,คำกริยา (Verbs)
+กวาด,SWEEP,คำกริยา (Verbs)
+ถู,MOP,คำกริยา (Verbs)
+ทำอาหาร,COOK,คำกริยา (Verbs)
+หั่น,CUT,คำกริยา (Verbs)
+ผสม,MIX,คำกริยา (Verbs)
+อบ,BAKE,คำกริยา (Verbs)
+วาด,DRAW,คำกริยา (Verbs)
+ระบายสี,PAINT,คำกริยา (Verbs)
+ร้อง,SING,คำกริยา (Verbs)
+เต้น,DANCE,คำกริยา (Verbs)
+กระโดด,JUMP,คำกริยา (Verbs)
+ปีน,CLIMB,คำกริยา (Verbs)
+ว่าย,SWIM,คำกริยา (Verbs)
+ขว้าง,THROW,คำกริยา (Verbs)
+จับ,CATCH,คำกริยา (Verbs)
+เตะ,KICK,คำกริยา (Verbs)
+ต่อสู้,FIGHT,คำกริยา (Verbs)
+ปกป้อง,PROTECT,คำกริยา (Verbs)
+โจมตี,ATTACK,คำกริยา (Verbs)
+ชนะ,WIN,คำกริยา (Verbs)
+แพ้,LOSE,คำกริยา (Verbs)
+ร้องไห้,CRY,คำกริยา (Verbs)
+หัวเราะ,LAUGH,คำกริยา (Verbs)
+ยิ้ม,SMILE,คำกริยา (Verbs)
+ตะโกน,SHOUT,คำกริยา (Verbs)
+กระซิบ,WHISPER,คำกริยา (Verbs)
+คิด,THINK,คำกริยา (Verbs)
+รู้,KNOW,คำกริยา (Verbs)
+เข้าใจ,UNDERSTAND,คำกริยา (Verbs)
+เรียน,LEARN,คำกริยา (Verbs)
+สอน,TEACH,คำกริยา (Verbs)
+อ่าน,READ,คำกริยา (Verbs)
+เขียน,WRITE,คำกริยา (Verbs)
+สะกด,SPELL,คำกริยา (Verbs)
+นับ,COUNT,คำกริยา (Verbs)
+เพิ่ม,ADD,คำกริยา (Verbs)
+ลด,REDUCE,คำกริยา (Verbs)
+ซื้อ,BUY,คำกริยา (Verbs)
+ขาย,SELL,คำกริยา (Verbs)
+จ่าย,PAY,คำกริยา (Verbs)
+ยืม,BORROW,คำกริยา (Verbs)
+ให้ยืม,LEND,คำกริยา (Verbs)
+ขโมย,STEAL,คำกริยา (Verbs)
+ซ่อน,HIDE,คำกริยา (Verbs)
+หา,FIND,คำกริยา (Verbs)
+ค้นหา,SEARCH,คำกริยา (Verbs)
+สูญหาย,LOSE,คำกริยา (Verbs)
+พบ,MEET,คำกริยา (Verbs)
+ทักทาย,GREET,คำกริยา (Verbs)
+ลาก่อน,LEAVE,คำกริยา (Verbs)
+มา,COME,คำกริยา (Verbs)
+ไป,GO,คำกริยา (Verbs)
+หยุด,STOP,คำกริยา (Verbs)
+เริ่ม,START,คำกริยา (Verbs)
+จบ,FINISH,คำกริยา (Verbs)
+รอ,WAIT,คำกริยา (Verbs)
+หวัง,HOPE,คำกริยา (Verbs)
+อธิษฐาน,PRAY,คำกริยา (Verbs)
+ดี,GOOD,คำคุณศัพท์ (Adjectives)
+เลว,BAD,คำคุณศัพท์ (Adjectives)
+ยอดเยี่ยม,GREAT,คำคุณศัพท์ (Adjectives)
+แย่มาก,TERRIBLE,คำคุณศัพท์ (Adjectives)
+สวย,BEAUTIFUL,คำคุณศัพท์ (Adjectives)
+หล่อ,HANDSOME,คำคุณศัพท์ (Adjectives)
+น่าเกลียด,UGLY,คำคุณศัพท์ (Adjectives)
+น่ารัก,CUTE,คำคุณศัพท์ (Adjectives)
+น่ากลัว,SCARY,คำคุณศัพท์ (Adjectives)
+ตลก,FUNNY,คำคุณศัพท์ (Adjectives)
+น่าเบื่อ,BORING,คำคุณศัพท์ (Adjectives)
+ฉลาด,SMART,คำคุณศัพท์ (Adjectives)
+โง่,STUPID,คำคุณศัพท์ (Adjectives)
+กล้าหาญ,BRAVE,คำคุณศัพท์ (Adjectives)
+ขี้ขลาด,COWARD,คำคุณศัพท์ (Adjectives)
+ขยัน,HARDWORKING,คำคุณศัพท์ (Adjectives)
+ขี้เกียจ,LAZY,คำคุณศัพท์ (Adjectives)
+ใจดี,KIND,คำคุณศัพท์ (Adjectives)
+โหดร้าย,CRUEL,คำคุณศัพท์ (Adjectives)
+ซื่อสัตย์,HONEST,คำคุณศัพท์ (Adjectives)
+เห็นแก่ตัว,SELFISH,คำคุณศัพท์ (Adjectives)
+สุภาพ,POLITE,คำคุณศัพท์ (Adjectives)
+หยาบคาย,RUDE,คำคุณศัพท์ (Adjectives)
+ภูมิใจ,PROUD,คำคุณศัพท์ (Adjectives)
+อาย,SHY,คำคุณศัพท์ (Adjectives)
+มีความสุข,HAPPY,คำคุณศัพท์ (Adjectives)
+เศร้า,SAD,คำคุณศัพท์ (Adjectives)
+โกรธ,ANGRY,คำคุณศัพท์ (Adjectives)
+ตื่นเต้น,EXCITED,คำคุณศัพท์ (Adjectives)
+ประหลาดใจ,SURPRISED,คำคุณศัพท์ (Adjectives)
+กังวล,WORRIED,คำคุณศัพท์ (Adjectives)
+เหนื่อย,TIRED,คำคุณศัพท์ (Adjectives)
+หิว,HUNGRY,คำคุณศัพท์ (Adjectives)
+กระหาย,THIRSTY,คำคุณศัพท์ (Adjectives)
+อิ่ม,FULL,คำคุณศัพท์ (Adjectives)
+ป่วย,SICK,คำคุณศัพท์ (Adjectives)
+แข็งแรง,STRONG,คำคุณศัพท์ (Adjectives)
+อ่อนแอ,WEAK,คำคุณศัพท์ (Adjectives)
+อ้วน,FAT,คำคุณศัพท์ (Adjectives)
+ผอม,THIN,คำคุณศัพท์ (Adjectives)
+สูง,TALL,คำคุณศัพท์ (Adjectives)
+เตี้ย,SHORT,คำคุณศัพท์ (Adjectives)
+ยาว,LONG,คำคุณศัพท์ (Adjectives)
+สั้น,SHORT,คำคุณศัพท์ (Adjectives)
+ใหญ่,BIG,คำคุณศัพท์ (Adjectives)
+เล็ก,SMALL,คำคุณศัพท์ (Adjectives)
+กว้าง,WIDE,คำคุณศัพท์ (Adjectives)
+แคบ,NARROW,คำคุณศัพท์ (Adjectives)
+หนา,THICK,คำคุณศัพท์ (Adjectives)
+ลึก,DEEP,คำคุณศัพท์ (Adjectives)
+ตื้น,SHALLOW,คำคุณศัพท์ (Adjectives)
+หนัก,HEAVY,คำคุณศัพท์ (Adjectives)
+เบา,LIGHT,คำคุณศัพท์ (Adjectives)
+เร็ว,FAST,คำคุณศัพท์ (Adjectives)
+ช้า,SLOW,คำคุณศัพท์ (Adjectives)
+ร้อน,HOT,คำคุณศัพท์ (Adjectives)
+เย็น,COLD,คำคุณศัพท์ (Adjectives)
+อบอุ่น,WARM,คำคุณศัพท์ (Adjectives)
+เปียก,WET,คำคุณศัพท์ (Adjectives)
+แห้ง,DRY,คำคุณศัพท์ (Adjectives)
+สะอาด,CLEAN,คำคุณศัพท์ (Adjectives)
+สกปรก,DIRTY,คำคุณศัพท์ (Adjectives)
+ใหม่,NEW,คำคุณศัพท์ (Adjectives)
+เก่า,OLD,คำคุณศัพท์ (Adjectives)
+หนุ่มสาว,YOUNG,คำคุณศัพท์ (Adjectives)
+รวย,RICH,คำคุณศัพท์ (Adjectives)
+จน,POOR,คำคุณศัพท์ (Adjectives)
+แพง,EXPENSIVE,คำคุณศัพท์ (Adjectives)
+ถูก,CHEAP,คำคุณศัพท์ (Adjectives)
+ปลอดภัย,SAFE,คำคุณศัพท์ (Adjectives)
+อันตราย,DANGEROUS,คำคุณศัพท์ (Adjectives)
+สำคัญ,IMPORTANT,คำคุณศัพท์ (Adjectives)
+มีประโยชน์,USEFUL,คำคุณศัพท์ (Adjectives)
+ว่างเปล่า,EMPTY,คำคุณศัพท์ (Adjectives)
+เต็ม,FULL,คำคุณศัพท์ (Adjectives)
+ง่าย,EASY,คำคุณศัพท์ (Adjectives)
+ยาก,HARD,คำคุณศัพท์ (Adjectives)
+ถูกต้อง,RIGHT,คำคุณศัพท์ (Adjectives)
+ผิด,WRONG,คำคุณศัพท์ (Adjectives)
+จริง,TRUE,คำคุณศัพท์ (Adjectives)
+เท็จ,FALSE,คำคุณศัพท์ (Adjectives)
+พายุทอร์นาโด,TORNADO,ธรรมชาติ (Nature)
+พายุเฮอริเคน,HURRICANE,ธรรมชาติ (Nature)
+สึนามิ,TSUNAMI,ธรรมชาติ (Nature)
+หิมะถล่ม,AVALANCHE,ธรรมชาติ (Nature)
+พายุฝนฟ้าคะนอง,THUNDERSTORM,ธรรมชาติ (Nature)
+อุกกาบาต,METEOR,ธรรมชาติ (Nature)
+ดาวหาง,COMET,ธรรมชาติ (Nature)
+ทางช้างเผือก,GALAXY,ธรรมชาติ (Nature)
+ดวงอาทิตย์,SUN,ธรรมชาติ (Nature)
+ดวงจันทร์,MOON,ธรรมชาติ (Nature)
+โลก,EARTH,ธรรมชาติ (Nature)
+ดาวพุธ,MERCURY,ธรรมชาติ (Nature)
+ดาวศุกร์,VENUS,ธรรมชาติ (Nature)
+ดาวอังคาร,MARS,ธรรมชาติ (Nature)
+ดาวพฤหัสบดี,JUPITER,ธรรมชาติ (Nature)
+ดาวเสาร์,SATURN,ธรรมชาติ (Nature)
+ดาวยูเรนัส,URANUS,ธรรมชาติ (Nature)
+ดาวเนปจูน,NEPTUNE,ธรรมชาติ (Nature)
+แอปพลิเคชัน,APP,เทคโนโลยี (Technology)
+เว็บไซต์,WEBSITE,เทคโนโลยี (Technology)
+อินเทอร์เน็ต,INTERNET,เทคโนโลยี (Technology)
+เครือข่าย,NETWORK,เทคโนโลยี (Technology)
+บลูทูธ,BLUETOOTH,เทคโนโลยี (Technology)
+พาวเวอร์แบงค์,POWERBANK,เทคโนโลยี (Technology)
+สายชาร์จ,CABLE,เทคโนโลยี (Technology)
+หน้าจอสัมผัส,TOUCHSCREEN,เทคโนโลยี (Technology)
+เครื่องพิมพ์,PRINTER,เทคโนโลยี (Technology)
+สแกนเนอร์,SCANNER,เทคโนโลยี (Technology)
+หูฟัง,HEADPHONE,เทคโนโลยี (Technology)
+ลำโพง,SPEAKER,เทคโนโลยี (Technology)
+ไมโครโฟน,MICROPHONE,เทคโนโลยี (Technology)
+รีโมท,REMOTE,เทคโนโลยี (Technology)
+แอร์,AIRCON,เทคโนโลยี (Technology)
+พัดลม,FAN,เทคโนโลยี (Technology)
+ตู้เย็น,FRIDGE,เทคโนโลยี (Technology)
+ไมโครเวฟ,MICROWAVE,เทคโนโลยี (Technology)
+เครื่องปั่น,BLENDER,เทคโนโลยี (Technology)
+เตารีด,IRON,เทคโนโลยี (Technology)
+เครื่องซักผ้า,WASHER,เทคโนโลยี (Technology)
+เครื่องดูดฝุ่น,VACUUM,เทคโนโลยี (Technology)
+ช่างประปา,PLUMBER,อาชีพ (Jobs)
+ช่างไฟฟ้า,ELECTRICIAN,อาชีพ (Jobs)
+ช่างก่อสร้าง,BUILDER,อาชีพ (Jobs)
+ชาวประมง,FISHERMAN,อาชีพ (Jobs)
+คนทำขนมปัง,BAKER,อาชีพ (Jobs)
+ช่างตัดเสื้อ,TAILOR,อาชีพ (Jobs)
+คนขับรถบรรทุก,TRUCKER,อาชีพ (Jobs)
+นักบินอวกาศ,ASTRONAUT,อาชีพ (Jobs)
+ผู้พิพากษา,JUDGE,อาชีพ (Jobs)
+ทนายความ,LAWYER,อาชีพ (Jobs)
+นักการเมือง,POLITICIAN,อาชีพ (Jobs)
+ประธานาธิบดี,PRESIDENT,อาชีพ (Jobs)
+กษัตริย์,KING,อาชีพ (Jobs)
+ราชินี,QUEEN,อาชีพ (Jobs)
+เจ้าชาย,PRINCE,อาชีพ (Jobs)
+เจ้าหญิง,PRINCESS,อาชีพ (Jobs)
+แม่ครัว,COOK,อาชีพ (Jobs)
+นักออกแบบ,DESIGNER,อาชีพ (Jobs)
+วิศวกร,ENGINEER,อาชีพ (Jobs)
+สถาปนิก,ARCHITECT,อาชีพ (Jobs)
+โรงแรม,HOTEL,สถานที่ (Places)
+คลินิก,CLINIC,สถานที่ (Places)
+ร้านขายยา,PHARMACY,สถานที่ (Places)
+ร้านอาหาร,RESTAURANT,สถานที่ (Places)
+คาเฟ่,CAFE,สถานที่ (Places)
+เบเกอรี่,BAKERY,สถานที่ (Places)
+ซูเปอร์มาร์เก็ต,SUPERMARKET,สถานที่ (Places)
+ห้างสรรพสินค้า,MALL,สถานที่ (Places)
+ร้านหนังสือ,BOOKSTORE,สถานที่ (Places)
+ที่ทำการไปรษณีย์,POSTOFFICE,สถานที่ (Places)
+สถานีตำรวจ,POLICESTATION,สถานที่ (Places)
+สถานีดับเพลิง,FIRESTATION,สถานที่ (Places)
+ศาล,COURT,สถานที่ (Places)
+หอศิลป์,GALLERY,สถานที่ (Places)
+มหาวิทยาลัย,UNIVERSITY,สถานที่ (Places)
+วิทยาลัย,COLLEGE,สถานที่ (Places)
+โรงละคร,THEATER,สถานที่ (Places)
+สวนสนุก,THEMEPARK,สถานที่ (Places)
+สถานีรถไฟ,STATION,สถานที่ (Places)
+ป้ายรถเมล์,BUSSTOP,สถานที่ (Places)
+ปราสาท,CASTLE,สถานที่ (Places)
+พระราชวัง,PALACE,สถานที่ (Places)
+โรงงาน,FACTORY,สถานที่ (Places)
+โกดัง,WAREHOUSE,สถานที่ (Places)
+อพาร์ทเม้นท์,APARTMENT,สถานที่ (Places)
+เต็นท์,TENT,สถานที่ (Places)
+กระท่อม,HUT,สถานที่ (Places)
+`;
+
+        // 2. โหลดคำศัพท์เข้าตัวแปร
+        let vocabList = [];
+        rawVocabData.trim().split('\n').forEach(line => {
+            const parts = line.split(',');
+            if(parts.length >= 3) {
+                vocabList.push({ 
+                    th: parts[0].trim(), 
+                    en: parts[1].trim().toUpperCase(), 
+                    type: parts[2].trim(), 
+                    len: parts[1].trim().length 
+                });
+            }
+        });
+        
+        window.onload = function() {
+            document.getElementById('vocab-count-display').textContent = `โหลดคลังคำศัพท์สำเร็จ: ${vocabList.length} คำ`;
+            document.getElementById('btn-start').addEventListener('click', startGame);
+            document.getElementById('btn-reboot').addEventListener('click', resetGame);
+        };
+
+        // 3. ระบบเสียง 
+        let audioCtx = null;
+        function initAudio() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (AudioContext) audioCtx = new AudioContext();
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playTone(freq, type, duration, vol=0.1) {
+            try {
+                initAudio();
+                if (!audioCtx) return;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch(e) { } 
+        }
+
+        function soundClick() { playTone(900, 'square', 0.05); }
+        function soundWin() { playTone(400, 'sine', 0.1); setTimeout(() => playTone(600, 'sine', 0.15), 100); setTimeout(() => playTone(1000, 'sine', 0.2), 200); }
+        function soundStrike() { playTone(200, 'triangle', 0.2, 0.2); }
+        function soundFail() { playTone(100, 'sawtooth', 0.8, 0.4); } 
+        function soundBlip() { playTone(1400, 'sine', 0.03, 0.05); }
+        function soundTick() { playTone(1000, 'sine', 0.01, 0.02); }
+
+        // 4. สถานะและตัวแปรหลัก
+        let score = 0, currentStrikes = 0;
+        const maxStrikes = 2; 
+        let currentAnswer = "";
+        let isLocked = false;
+        
+        let gridInterval = null, glitchInterval = null, radarInterval = null;
+        let animationFrame = null, memoryTimeout = null, mainTimer = null;
+        let timeTotalMs = 60000, timeLeftMs = 60000;
+
+        const elScore = document.getElementById('ui-score');
+        const elStrikes = document.getElementById('ui-strikes');
+        const elTimerBar = document.getElementById('ui-timer-bar');
+        const elTimerText = document.getElementById('ui-timer-text');
+        
+        const screenMenu = document.getElementById('screen-menu');
+        const screenGame = document.getElementById('screen-game');
+        const screenOver = document.getElementById('screen-gameover');
+        const mgContainer = document.getElementById('minigame-container');
+        const targetWord = document.getElementById('target-word');
+        const targetCategory = document.getElementById('target-category');
+
+        // 5. ระบบควบคุมเกมหลัก
+        function startGame() {
+            initAudio(); 
+            soundClick();
+            score = 0;
+            updateUI();
+            screenMenu.classList.add('hidden');
+            screenOver.classList.add('hidden');
+            screenGame.classList.remove('hidden');
+            screenGame.classList.add('flex');
+            nextRound();
+        }
+
+        function resetGame() {
+            soundClick();
+            screenOver.classList.add('hidden');
+            screenMenu.classList.remove('hidden');
+        }
+
+        function updateUI() {
+            elScore.textContent = score.toString().padStart(4, '0');
+            elStrikes.textContent = `${currentStrikes}/${maxStrikes}`;
+        }
+
+        function nextRound() {
+            clearMinigame();
+            currentStrikes = 0;
+            isLocked = false;
+            updateUI();
+            
+            const games = [
+                loadMinigameKeypad, loadMinigameSlider, loadMinigameGrid, loadMinigameWire, 
+                loadMinigameTune, loadMinigameSafeDial, loadMinigameMemory, loadMinigameIntercept,
+                loadMinigameFirewall, loadMinigameRadar, loadMinigameGlitch, loadMinigameVault
+            ];
+            const selectedGame = games[Math.floor(Math.random() * games.length)];
+            
+            let vocabPool = vocabList;
+            if (selectedGame === loadMinigameVault) {
+                vocabPool = vocabList.filter(v => v.len === 3);
+            } else if (selectedGame === loadMinigameKeypad) {
+                vocabPool = vocabList.filter(v => new Set(v.en.split('')).size <= 10);
+            }
+            
+            let vocab = vocabPool[Math.floor(Math.random() * vocabPool.length)];
+            currentAnswer = vocab.en;
+            targetCategory.textContent = `CATEGORY: ${vocab.type}`;
+            targetWord.textContent = vocab.th;
+            targetWord.classList.remove('success-text', 'danger-text');
+            targetWord.classList.add('text-white');
+
+            startTimer();
+            selectedGame();
+        }
+
+        function startTimer() {
+            clearInterval(mainTimer);
+            // เวลาสูงสุด 60 วิ, ต่ำสุด 15 วิ (60000 - 15000 = 45000) หักตามคะแนน
+            timeTotalMs = Math.max(15000, 60000 - (score / 5000) * 45000);
+            timeLeftMs = timeTotalMs;
+            
+            elTimerBar.style.width = '100%';
+            elTimerBar.className = 'bg-sky-500 h-full w-full transition-all duration-75';
+            
+            mainTimer = setInterval(() => {
+                if (isLocked) { clearInterval(mainTimer); return; }
+                
+                timeLeftMs -= 50;
+                let pct = (timeLeftMs / timeTotalMs) * 100;
+                elTimerBar.style.width = pct + '%';
+                elTimerText.textContent = (timeLeftMs / 1000).toFixed(1) + 's';
+
+                if (pct < 30) elTimerBar.classList.replace('bg-sky-500', 'bg-red-500');
+                if (timeLeftMs <= 0) {
+                    clearInterval(mainTimer);
+                    elTimerBar.style.width = '0%';
+                    handleTimeOut(); 
+                }
+            }, 50);
+        }
+
+        function evaluateAnswer(isCorrect, elementToShake = null) {
+            if (isLocked) return;
+
+            if (isCorrect) {
+                isLocked = true;
+                clearInterval(mainTimer);
+                soundWin();
+                
+                let pointsEarned = Math.floor(Math.random() * (100 - 20 + 1)) + 20;
+                score += pointsEarned;
+                
+                targetWord.textContent = `${currentAnswer} (+${pointsEarned})`; 
+                targetWord.classList.remove('text-white', 'text-3xl', 'sm:text-4xl', 'md:text-5xl');
+                targetWord.classList.add('success-text', 'text-3xl', 'md:text-5xl');
+                setTimeout(nextRound, 1500);
+            } else {
+                currentStrikes++;
+                updateUI();
+                
+                if (elementToShake) {
+                    elementToShake.classList.add('shake-anim');
+                    setTimeout(() => elementToShake.classList.remove('shake-anim'), 200);
+                }
+
+                if (currentStrikes > maxStrikes) {
+                    isLocked = true;
+                    clearInterval(mainTimer);
+                    soundFail();
+                    targetWord.textContent = currentAnswer;
+                    targetWord.classList.remove('text-white', 'text-3xl', 'sm:text-4xl', 'md:text-5xl');
+                    targetWord.classList.add('danger-text', 'text-4xl', 'md:text-6xl');
+                    setTimeout(gameOver, 2000); 
+                } else {
+                    soundStrike();
+                }
+            }
+            return isCorrect;
+        }
+
+        function handleTimeOut() {
+            if (isLocked) return;
+            isLocked = true;
+            soundFail();
+            targetWord.textContent = currentAnswer; 
+            targetWord.classList.remove('text-white');
+            targetWord.classList.add('danger-text');
+            setTimeout(gameOver, 2000);
+        }
+
+        function gameOver() {
+            clearMinigame();
+            screenGame.classList.add('hidden');
+            screenGame.classList.remove('flex');
+            screenOver.classList.remove('hidden');
+            screenOver.classList.add('flex');
+            
+            document.getElementById('final-score').textContent = score;
+            
+            let rank = "", rankColor = "";
+            if (score < 1000) { rank = "KINDERGARTEN (เด็กอนุบาล)"; rankColor = "text-slate-400"; }
+            else if (score < 2000) { rank = "BEGINNER (ผู้เริ่มต้น)"; rankColor = "text-green-400"; }
+            else if (score < 3000) { rank = "SMART LEARNER (คนเก่ง)"; rankColor = "text-blue-400"; }
+            else if (score < 5000) { rank = "VOCAB MASTER (ปรมาจารย์)"; rankColor = "text-purple-400"; }
+            else { rank = "ENGLISH GOD (เทพเจ้าภาษาอังกฤษ)"; rankColor = "text-sky-400 font-bold animate-pulse"; }
+            
+            const rankEl = document.getElementById('final-rank');
+            rankEl.textContent = rank;
+            rankEl.className = "text-xl md:text-2xl mt-1 " + rankColor;
+        }
+
+        function clearMinigame() {
+            mgContainer.innerHTML = '';
+            if (mainTimer) clearInterval(mainTimer);
+            if (gridInterval) clearInterval(gridInterval);
+            if (glitchInterval) clearInterval(glitchInterval);
+            if (radarInterval) clearInterval(radarInterval);
+            if (memoryTimeout) clearTimeout(memoryTimeout);
+            if (animationFrame) cancelAnimationFrame(animationFrame);
+        }
+
+        function generateWrongWords(correctWord, count) {
+            let wrongs = [];
+            let pool = vocabList.filter(v => v.en !== correctWord);
+            pool.sort(() => Math.random() - 0.5);
+            for(let i=0; i<count && i<pool.length; i++){
+                wrongs.push(pool[i].en);
+            }
+            return wrongs;
+        }
+
+        // ==========================================
+        // 1. KEYPAD HACK (SPELL THE WORD) 
+        // ⭐️ แก้ไขให้พิมพ์คำศัพท์ความยาวไม่จำกัด
+        // ==========================================
+        function loadMinigameKeypad() {
+            const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('');
+            let correctLetters = [...new Set(currentAnswer.split(''))];
+            let kbLetters = [...correctLetters];
+            while(kbLetters.length < 10) {
+                let r = alphabet[Math.floor(Math.random() * 26)];
+                if(!kbLetters.includes(r)) kbLetters.push(r);
+            }
+            kbLetters.sort(() => Math.random() - 0.5); 
+            kbLetters.push('DEL', 'OK'); 
+
+            let buttonsHtml = kbLetters.map(l => {
+                if(l === 'DEL') return '<button class="kp-btn btn-retro h-10 md:h-12 text-sm md:text-base text-red-500 font-bold rounded-md" data-val="DEL">DEL</button>';
+                if(l === 'OK') return '<button class="kp-btn btn-retro h-10 md:h-12 text-sm md:text-base text-green-500 font-bold col-span-2 rounded-md" data-val="ENTER">OK</button>';
+                return '<button class="kp-btn btn-retro h-10 md:h-12 text-base md:text-lg font-bold rounded-md" data-val="' + l + '">' + l + '</button>';
+            }).join('');
+
+            mgContainer.innerHTML = `
+                <div class="flex flex-col items-center w-full max-w-[260px] md:max-w-[320px]" id="kp-container">
+                    <div class="text-xs md:text-sm mb-2 text-sky-500">SPELL THE WORD</div>
+                    <div id="kp-display" class="w-full bg-slate-900 border border-sky-500 h-10 md:h-12 mb-3 flex items-center justify-center text-lg md:text-xl tracking-[0.5em] text-white pl-2 rounded-md overflow-hidden">_</div>
+                    <div class="grid grid-cols-4 gap-2 w-full">
+                        ${buttonsHtml}
+                    </div>
+                </div>
+            `;
+            let inputVal = "";
+            const display = document.getElementById('kp-display');
+            const container = document.getElementById('kp-container');
+            
+            document.querySelectorAll('.kp-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    if(isLocked) return;
+                    soundClick();
+                    let v = e.target.getAttribute('data-val');
+                    if (v === 'DEL') { 
+                        inputVal = inputVal.slice(0, -1); 
+                    } 
+                    else if (v === 'ENTER') {
+                        if(!evaluateAnswer(inputVal === currentAnswer, container)) {
+                            inputVal = ""; 
+                        }
+                    } else { 
+                        // ⭐️ เอาเงื่อนไข (inputVal.length < currentAnswer.length + 1) ออก ทำให้พิมพ์ได้ไม่จำกัด
+                        inputVal += v; 
+                    }
+                    display.textContent = inputVal || "_";
+                });
+            });
+        }
+
+        function loadMinigameSlider() {
+            let choices = generateWrongWords(currentAnswer, 2);
+            choices.push(currentAnswer);
+            choices.sort(() => Math.random() - 0.5);
+            let correctIdx = choices.indexOf(currentAnswer);
+
+            mgContainer.innerHTML = `
+                <div class="w-full max-w-[340px] md:max-w-lg flex flex-col items-center" id="slider-container">
+                    <div class="text-xs md:text-sm mb-4 md:mb-6 text-sky-500 text-center">TAP WHEN ALIGNED WITH CORRECT WORD</div>
+                    <div class="relative w-full h-12 md:h-16 border border-sky-800 bg-slate-900 flex mb-6 md:mb-8 text-white overflow-hidden rounded-md">
+                        <div class="flex-1 border-r border-sky-800 flex items-center justify-center text-xs md:text-base font-bold opacity-80" id="zone-0">${choices[0]}</div>
+                        <div class="flex-1 border-r border-sky-800 flex items-center justify-center text-xs md:text-base font-bold opacity-80" id="zone-1">${choices[1]}</div>
+                        <div class="flex-1 flex items-center justify-center text-xs md:text-base font-bold opacity-80" id="zone-2">${choices[2]}</div>
+                        <div id="slider-cursor" class="absolute top-0 left-0 h-full w-1 md:w-2 bg-white shadow-[0_0_8px_#fff]"></div>
+                    </div>
+                    <button id="slider-btn" class="btn-retro w-full py-3 md:py-4 text-xl md:text-2xl font-bold rounded-md">ENGAGE</button>
+                </div>
+            `;
+
+            const cursor = document.getElementById('slider-cursor');
+            const container = document.getElementById('slider-container');
+            let pos = 0;
+            let speed = 0.3 + (Math.random() * 0.4); 
+            let direction = 1;
+
+            function animate() {
+                if (isLocked) return;
+                pos += speed * direction;
+                if (pos >= 100) { pos = 100; direction = -1; }
+                if (pos <= 0) { pos = 0; direction = 1; }
+                cursor.style.left = `calc(${pos}% - 2px)`;
+                animationFrame = requestAnimationFrame(animate);
+            }
+            animate();
+
+            document.getElementById('slider-btn').addEventListener('click', () => {
+                if (isLocked) return;
+                let landedZone = (pos <= 33.33) ? 0 : (pos <= 66.66) ? 1 : 2;
+                if (!evaluateAnswer(landedZone === correctIdx, container) && !isLocked) {
+                    let z = document.getElementById(`zone-${landedZone}`);
+                    z.classList.add('bg-red-900/50', 'text-red-500');
+                    setTimeout(() => z.classList.remove('bg-red-900/50', 'text-red-500'), 500);
+                }
+            });
+        }
+
+        function loadMinigameGrid() {
+            let choices = generateWrongWords(currentAnswer, 11);
+            choices.push(currentAnswer);
+            choices.sort(() => Math.random() - 0.5);
+
+            let gridHtml = choices.map(val => 
+                '<button class="grid-btn btn-retro h-10 md:h-12 text-[10px] md:text-sm font-bold flex items-center justify-center px-1 rounded-md" data-val="' + val + '">' + val + '</button>'
+            ).join('');
+
+            mgContainer.innerHTML = `
+                <div class="flex flex-col items-center w-full max-w-[320px] md:max-w-md" id="grid-container">
+                    <div class="text-xs md:text-sm mb-3 md:mb-4 text-sky-500">LOCATE CORRECT VOCAB</div>
+                    <div id="grid-board" class="grid grid-cols-3 md:grid-cols-4 gap-2 md:gap-3 w-full">
+                        ${gridHtml}
+                    </div>
+                </div>
+            `;
+            const board = document.getElementById('grid-board');
+            const container = document.getElementById('grid-container');
+            
+            function renderGrid() {
+                if (isLocked) return;
+                choices.sort(() => Math.random() - 0.5);
+                board.innerHTML = choices.map(val => 
+                    '<button class="grid-btn btn-retro h-10 md:h-12 text-[10px] md:text-sm font-bold flex items-center justify-center px-1 rounded-md" data-val="' + val + '">' + val + '</button>'
+                ).join('');
+
+                document.querySelectorAll('.grid-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        if(isLocked) return;
+                        soundClick();
+                        if (!evaluateAnswer(e.target.getAttribute('data-val') === currentAnswer, container)) {
+                            e.target.disabled = true;
+                        }
+                    });
+                });
+            }
+
+            document.querySelectorAll('.grid-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    if(isLocked) return;
+                    soundClick();
+                    if (!evaluateAnswer(e.target.getAttribute('data-val') === currentAnswer, container)) {
+                        e.target.disabled = true;
+                    }
+                });
+            });
+
+            let shuffleDelay = Math.max(2000, 4500 - (score / 5000) * 2500); 
+            gridInterval = setInterval(() => { if(!isLocked) { soundClick(); renderGrid(); } }, shuffleDelay); 
+        }
+
+        function loadMinigameWire() {
+            let choices = generateWrongWords(currentAnswer, 3);
+            choices.push(currentAnswer);
+            choices.sort(() => Math.random() - 0.5);
+            let colors = ['bg-red-600', 'bg-blue-600', 'bg-green-600', 'bg-yellow-500'];
+
+            let wiresHtml = choices.map((val, idx) => `
+                <div class="flex items-center gap-2 md:gap-4">
+                    <div class="w-16 md:w-20 text-right font-bold text-sm md:text-base shrink-0">${val}</div>
+                    <button class="wire-btn btn-retro flex-1 h-6 md:h-8 ${colors[idx]} rounded-full border-y-2 border-black/50 shadow-lg cursor-pointer" data-val="${val}"></button>
+                    <div class="w-6 h-6 md:w-8 md:h-8 rounded-full bg-slate-800 border-2 border-slate-600 shrink-0"></div>
+                </div>
+            `).join('');
+
+            mgContainer.innerHTML = `
+                <div class="flex flex-col items-center w-full max-w-[320px] md:max-w-md" id="wire-container">
+                    <div class="text-xs md:text-sm mb-4 md:mb-6 text-sky-500">CUT THE CORRECT WIRE</div>
+                    <div class="flex flex-col gap-3 md:gap-4 w-full">
+                        ${wiresHtml}
+                    </div>
+                </div>
+            `;
+            const container = document.getElementById('wire-container');
+            document.querySelectorAll('.wire-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    if (isLocked) return;
+                    let isCorrect = evaluateAnswer(e.target.getAttribute('data-val') === currentAnswer, container);
+                    if (!isCorrect && !isLocked) {
+                        e.target.classList.add('opacity-20', 'pointer-events-none');
+                        e.target.style.backgroundColor = '#ef4444';
+                    } else if (isCorrect) {
+                        e.target.classList.add('opacity-0'); 
+                    }
+                });
+            });
+        }
+
+        function loadMinigameTune() {
+            let choices = generateWrongWords(currentAnswer, 9);
+            choices.push(currentAnswer);
+            choices.sort(); 
+
+            mgContainer.innerHTML = `
+                <div class="flex flex-col items-center w-full max-w-[280px] md:max-w-sm" id="tune-container">
+                    <div class="text-xs md:text-sm mb-4 md:mb-6 text-sky-500 text-center">TUNE TO CORRECT WORD</div>
+                    <div class="bg-slate-900 border border-sky-800 w-full p-4 md:p-6 flex flex-col items-center mb-4 md:mb-6 rounded-lg">
+                        <div class="text-[10px] md:text-xs text-sky-700 mb-1 md:mb-2">CURRENT FREQ</div>
+                        <div id="tune-display" class="text-3xl md:text-4xl font-bold text-sky-400 font-mono tracking-tighter">${choices[0]}</div>
+                    </div>
+                    <input type="range" id="tune-slider" min="0" max="9" value="0" class="w-full mb-6 md:mb-8 accent-sky-500 h-6 md:h-4 bg-slate-800 rounded-lg appearance-none cursor-pointer">
+                    <button id="tune-submit" class="btn-retro w-full py-3 md:py-4 text-xl md:text-2xl font-bold rounded-lg">TRANSMIT</button>
+                </div>
+            `;
+            const container = document.getElementById('tune-container');
+            const slider = document.getElementById('tune-slider');
+            const display = document.getElementById('tune-display');
+            
+            slider.value = Math.floor(Math.random() * 10);
+            display.textContent = choices[slider.value];
+
+            slider.addEventListener('input', (e) => {
+                display.textContent = choices[e.target.value];
+                soundClick();
+            });
+            document.getElementById('tune-submit').addEventListener('click', () => {
+                if (isLocked) return;
+                if (!evaluateAnswer(choices[slider.value] === currentAnswer, container) && !isLocked) {
+                    display.classList.replace('text-sky-400', 'text-red-500');
+                    setTimeout(() => display.classList.replace('text-red-500', 'text-sky-400'), 500);
+                }
+            });
+        }
+
+        function loadMinigameSafeDial() {
+            let choices = generateWrongWords(currentAnswer, 11);
+            choices.push(currentAnswer);
+            choices.sort(() => Math.random() - 0.5);
+
+            mgContainer.innerHTML = `
+                <div class="flex flex-col items-center w-full max-w-[280px] md:max-w-sm" id="safedial-container">
+                    <div class="text-xs md:text-sm mb-4 md:mb-6 text-sky-500 text-center">SPIN DIAL TO TARGET</div>
+                    <div class="relative w-full flex items-center justify-between gap-4 mb-6 md:mb-8">
+                        <button id="sd-left" class="btn-retro w-16 h-16 md:w-20 md:h-20 text-2xl font-bold flex items-center justify-center rounded-lg">◀</button>
+                        <div class="flex-1 bg-black rounded-xl flex items-center justify-center border-4 border-slate-800 h-20 md:h-24 shadow-inner px-2 text-center">
+                            <span id="dial-display" class="text-xl md:text-2xl font-bold text-sky-400 tracking-tighter break-words">${choices[0]}</span>
+                        </div>
+                        <button id="sd-right" class="btn-retro w-16 h-16 md:w-20 md:h-20 text-2xl font-bold flex items-center justify-center rounded-lg">▶</button>
+                    </div>
+                    <button id="safedial-submit" class="btn-retro w-full py-3 md:py-4 text-xl md:text-2xl font-bold rounded-lg">UNLOCK</button>
+                </div>
+            `;
+            
+            const container = document.getElementById('safedial-container');
+            const display = document.getElementById('dial-display');
+            
+            let currentIdx = Math.floor(Math.random() * 12);
+            display.textContent = choices[currentIdx];
+
+            document.getElementById('sd-left').addEventListener('click', () => {
+                if (isLocked) return;
+                soundTick();
+                currentIdx = (currentIdx - 1 + 12) % 12;
+                display.textContent = choices[currentIdx];
+            });
+
+            document.getElementById('sd-right').addEventListener('click', () => {
+                if (isLocked) return;
+                soundTick();
+                currentIdx = (currentIdx + 1) % 12;
+                display.textContent = choices[currentIdx];
+            });
+
+            document.getElementById('safedial-submit').addEventListener('click', () => {
+                if (isLocked) return;
+                if (!evaluateAnswer(choices[currentIdx] === currentAnswer, container) && !isLocked) {
+                    display.classList.replace('text-sky-400', 'text-red-500');
+                    setTimeout(() => display.classList.replace('text-red-500', 'text-sky-400'), 500);
+                }
+            });
+        }
+
+        function loadMinigameMemory() {
+            let choices = generateWrongWords(currentAnswer, 3);
+            choices.push(currentAnswer);
+            choices.sort(() => Math.random() - 0.5);
+
+            let memoryHtml = choices.map(val => `
+                <button class="memory-btn btn-retro h-16 md:h-20 text-sm md:text-xl font-bold flex items-center justify-center transition-all rounded-lg" data-val="${val}" disabled>
+                    ${val}
+                </button>
+            `).join('');
+
+            mgContainer.innerHTML = `
+                <div class="flex flex-col items-center w-full max-w-[280px] md:max-w-md" id="memory-container">
+                    <div class="text-[10px] md:text-sm mb-3 md:mb-4 text-sky-500 text-center">MEMORIZE LOCATION (HIDDEN IN 2.0s)</div>
+                    <div id="memory-board" class="grid grid-cols-2 gap-2 md:gap-4 w-full">
+                        ${memoryHtml}
+                    </div>
+                </div>
+            `;
+            const container = document.getElementById('memory-container');
+            const buttons = document.querySelectorAll('.memory-btn');
+            
+            memoryTimeout = setTimeout(() => {
+                if (isLocked) return;
+                buttons.forEach(btn => {
+                    btn.textContent = '???';
+                    btn.disabled = false;
+                    btn.classList.add('hover:bg-sky-500', 'hover:text-black');
+                });
+                soundClick(); 
+            }, 2000);
+
+            buttons.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    if (isLocked) return;
+                    let v = e.target.getAttribute('data-val');
+                    e.target.textContent = v; 
+                    let isCorrect = evaluateAnswer(v === currentAnswer, container);
+                    if (!isCorrect && !isLocked) {
+                        e.target.classList.add('opacity-50', 'pointer-events-none');
+                        e.target.style.borderColor = '#ef4444';
+                        e.target.style.color = '#ef4444';
+                    } else if (isCorrect) {
+                        e.target.classList.add('bg-green-600', 'text-black');
+                    }
+                });
+            });
+        }
+
+        function loadMinigameIntercept() {
+            let choices = generateWrongWords(currentAnswer, 3);
+            choices.push(currentAnswer);
+            choices.sort(() => Math.random() - 0.5);
+
+            let interceptHtml = choices.map((val) => {
+                let duration = (2.5 + Math.random() * 2.5).toFixed(2);
+                let delay = (Math.random() * -2).toFixed(2); 
+                return `
+                <div class="relative w-full h-12 md:h-14 bg-slate-900 border border-sky-900/50 overflow-hidden rounded-md">
+                    <button class="intercept-btn btn-retro absolute top-0 h-full w-24 md:w-28 bg-sky-600 text-black font-bold text-sm md:text-base flex items-center justify-center shadow-[0_0_8px_#0284c7]" 
+                            style="animation: moveLeftRight ${duration}s linear ${delay}s alternate infinite;" 
+                            data-val="${val}">
+                        ${val}
+                    </button>
+                </div>
+                `;
+            }).join('');
+
+            mgContainer.innerHTML = `
+                <div class="flex flex-col items-center w-full max-w-[320px] md:max-w-md" id="intercept-container">
+                    <div class="text-xs md:text-sm mb-4 md:mb-6 text-sky-500 text-center">INTERCEPT CORRECT WORD</div>
+                    <div class="w-full flex flex-col gap-2 md:gap-3">
+                        ${interceptHtml}
+                    </div>
+                </div>
+            `;
+            const container = document.getElementById('intercept-container');
+            document.querySelectorAll('.intercept-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    if (isLocked) return;
+                    let isCorrect = evaluateAnswer(e.target.getAttribute('data-val') === currentAnswer, container);
+                    if (!isCorrect && !isLocked) {
+                        e.target.classList.add('opacity-30', 'pointer-events-none');
+                        e.target.style.backgroundColor = '#ef4444';
+                        e.target.style.boxShadow = 'none';
+                    } else if (isCorrect) {
+                        e.target.style.animationPlayState = 'paused'; 
+                        e.target.style.backgroundColor = '#22c55e';
+                    }
+                });
+            });
+        }
+
+        function loadMinigameFirewall() {
+            let choices = generateWrongWords(currentAnswer, 4);
+            choices.push(currentAnswer);
+            choices.sort(() => Math.random() - 0.5);
+
+            let firewallHtml = choices.map((val, idx) => {
+                let duration = (4.0 + Math.random() * 3.5).toFixed(2);
+                let delay = (Math.random() * -3).toFixed(2); 
+                let leftPos = (5 + (idx * 18));
+                return `
+                <button class="firewall-btn btn-retro absolute w-16 md:w-20 h-10 md:h-12 bg-slate-800 border-2 border-sky-600 text-sky-400 font-bold text-xs md:text-sm flex items-center justify-center shadow-lg rounded-md" 
+                        style="left: ${leftPos}%; animation: fallDown ${duration}s linear ${delay}s infinite;" 
+                        data-val="${val}">
+                    ${val}
+                </button>
+                `;
+            }).join('');
+
+            mgContainer.innerHTML = `
+                <div class="flex flex-col items-center w-full h-full relative" id="firewall-container">
+                    <div class="absolute top-2 w-full text-center text-[10px] md:text-sm text-sky-500 z-20 pointer-events-none">DEFEND FIREWALL (SHOOT CORRECT WORD)</div>
+                    <div class="absolute bottom-0 w-full h-8 bg-red-900/30 border-t-2 border-red-500 flex items-center justify-center text-xs text-red-500 z-10 pointer-events-none">FIREWALL LINE</div>
+                    <div id="blocks-area" class="w-full h-full relative overflow-hidden mt-8">
+                        ${firewallHtml}
+                    </div>
+                </div>
+            `;
+            const container = document.getElementById('firewall-container');
+            document.querySelectorAll('.firewall-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    if (isLocked) return;
+                    let isCorrect = evaluateAnswer(e.target.getAttribute('data-val') === currentAnswer, container);
+                    if (!isCorrect && !isLocked) {
+                        e.target.classList.add('opacity-0', 'pointer-events-none');
+                    } else if (isCorrect) {
+                        e.target.style.animationPlayState = 'paused';
+                        e.target.style.backgroundColor = '#22c55e';
+                        e.target.style.color = '#000';
+                    }
+                });
+            });
+        }
+
+        function loadMinigameRadar() {
+            let choices = generateWrongWords(currentAnswer, 3);
+            choices.push(currentAnswer);
+            choices.sort(() => Math.random() - 0.5);
+
+            let radarHtml = choices.map((val, idx) => `
+                <button class="radar-btn btn-retro absolute w-20 h-12 md:w-24 md:h-16 text-xs md:text-sm font-bold flex items-center justify-center opacity-0 transition-opacity duration-200 rounded-xl" 
+                        style="${idx===0?'top:15%;left:15%':idx===1?'top:25%;right:10%':idx===2?'bottom:20%;left:10%':'bottom:15%;right:15%'}"
+                        data-val="${val}">
+                    ${val}
+                </button>
+            `).join('');
+
+            mgContainer.innerHTML = `
+                <div class="flex flex-col items-center w-full max-w-[280px] md:max-w-sm" id="radar-container">
+                    <div class="text-[10px] md:text-sm mb-3 text-sky-500 text-center">RADAR SWEEP (FIND TARGET IN DARK)</div>
+                    <div class="grid grid-cols-2 gap-4 w-full h-48 md:h-64 relative bg-slate-950 border-2 border-slate-800 p-4 rounded-full overflow-hidden">
+                        ${radarHtml}
+                    </div>
+                </div>
+            `;
+            const container = document.getElementById('radar-container');
+            const buttons = document.querySelectorAll('.radar-btn');
+            
+            radarInterval = setInterval(() => {
+                if (isLocked) return;
+                let randIdx = Math.floor(Math.random() * buttons.length);
+                let btn = buttons[randIdx];
+                if (!btn.disabled) {
+                    btn.classList.replace('opacity-0', 'opacity-100');
+                    soundBlip();
+                    setTimeout(() => {
+                        if (!isLocked) {
+                            btn.classList.replace('opacity-100', 'opacity-0');
+                        }
+                    }, 800); 
+                }
+            }, 1200);
+
+            buttons.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    if (isLocked) return;
+                    let isCorrect = evaluateAnswer(e.target.getAttribute('data-val') === currentAnswer, container);
+                    if (!isCorrect && !isLocked) {
+                        e.target.disabled = true;
+                    } else if (isCorrect) {
+                        e.target.classList.replace('opacity-0', 'opacity-100');
+                        e.target.style.backgroundColor = '#22c55e';
+                        e.target.style.color = '#000';
+                    }
+                });
+            });
+        }
+
+        function loadMinigameGlitch() {
+            let choices = generateWrongWords(currentAnswer, 3);
+            choices.push(currentAnswer);
+            choices.sort(() => Math.random() - 0.5);
+
+            let glitchHtml = choices.map((val, idx) => `
+                <button class="glitch-btn btn-retro h-16 md:h-20 text-sm md:text-lg font-bold flex items-center justify-center rounded-lg" 
+                        id="glitch-btn-${idx}" data-val="${val}">
+                    ${val}
+                </button>
+            `).join('');
+
+            mgContainer.innerHTML = `
+                <div class="flex flex-col items-center w-full max-w-[280px] md:max-w-sm" id="glitch-container">
+                    <div class="text-[10px] md:text-sm mb-4 text-sky-500 text-center">GLITCH CODE (FIND THE STABLE DATA)</div>
+                    <div class="grid grid-cols-2 gap-3 w-full">
+                        ${glitchHtml}
+                    </div>
+                </div>
+            `;
+            const container = document.getElementById('glitch-container');
+            const symbols = ['#@!%', 'XXXX', '????', '0x00', '%&*@', '----'];
+            
+            glitchInterval = setInterval(() => {
+                if (isLocked) return;
+                document.querySelectorAll('.glitch-btn').forEach(btn => {
+                    if (btn.disabled) return;
+                    if (Math.random() < 0.4) {
+                        btn.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+                        btn.classList.add('text-red-400', 'italic');
+                        soundBlip();
+                    } else {
+                        btn.textContent = btn.getAttribute('data-val');
+                        btn.classList.remove('text-red-400', 'italic');
+                    }
+                });
+            }, 600); 
+
+            document.querySelectorAll('.glitch-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    if (isLocked) return;
+                    e.target.textContent = e.target.getAttribute('data-val'); 
+                    let isCorrect = evaluateAnswer(e.target.getAttribute('data-val') === currentAnswer, container);
+                    if (!isCorrect && !isLocked) {
+                        e.target.disabled = true;
+                        e.target.classList.add('opacity-30', 'pointer-events-none');
+                    }
+                });
+            });
+        }
+
+        function loadMinigameVault() {
+            const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('');
+            mgContainer.innerHTML = `
+                <div class="flex flex-col items-center w-full max-w-[240px] md:max-w-xs" id="vault-container">
+                    <div class="text-[10px] md:text-sm mb-4 text-sky-500 text-center">SECURE VAULT (SET LETTERS)</div>
+                    <div class="flex gap-2 md:gap-4 mb-6">
+                        <div class="flex flex-col items-center">
+                            <button class="v-up btn-retro w-10 h-10 md:w-12 md:h-12 flex items-center justify-center text-xl rounded-md" data-idx="0">▲</button>
+                            <div class="v-char text-3xl md:text-5xl font-bold bg-slate-900 border border-sky-800 w-12 md:w-16 h-16 md:h-20 flex items-center justify-center my-2 text-white rounded-md" id="v-0">A</div>
+                            <button class="v-down btn-retro w-10 h-10 md:w-12 md:h-12 flex items-center justify-center text-xl rounded-md" data-idx="0">▼</button>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <button class="v-up btn-retro w-10 h-10 md:w-12 md:h-12 flex items-center justify-center text-xl rounded-md" data-idx="1">▲</button>
+                            <div class="v-char text-3xl md:text-5xl font-bold bg-slate-900 border border-sky-800 w-12 md:w-16 h-16 md:h-20 flex items-center justify-center my-2 text-white rounded-md" id="v-1">A</div>
+                            <button class="v-down btn-retro w-10 h-10 md:w-12 md:h-12 flex items-center justify-center text-xl rounded-md" data-idx="1">▼</button>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <button class="v-up btn-retro w-10 h-10 md:w-12 md:h-12 flex items-center justify-center text-xl rounded-md" data-idx="2">▲</button>
+                            <div class="v-char text-3xl md:text-5xl font-bold bg-slate-900 border border-sky-800 w-12 md:w-16 h-16 md:h-20 flex items-center justify-center my-2 text-white rounded-md" id="v-2">A</div>
+                            <button class="v-down btn-retro w-10 h-10 md:w-12 md:h-12 flex items-center justify-center text-xl rounded-md" data-idx="2">▼</button>
+                        </div>
+                    </div>
+                    <button id="vault-submit" class="btn-retro w-full py-3 md:py-4 text-xl md:text-2xl font-bold rounded-lg">UNLOCK</button>
+                </div>
+            `;
+            const container = document.getElementById('vault-container');
+            let letterIdx = [0, 0, 0]; 
+
+            function updateDisplay() {
+                document.getElementById('v-0').textContent = alphabet[letterIdx[0]];
+                document.getElementById('v-1').textContent = alphabet[letterIdx[1]];
+                document.getElementById('v-2').textContent = alphabet[letterIdx[2]];
+            }
+
+            document.querySelectorAll('.v-up').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    if (isLocked) return;
+                    soundClick();
+                    let idx = parseInt(e.target.getAttribute('data-idx'));
+                    letterIdx[idx] = (letterIdx[idx] + 1) % 26; 
+                    updateDisplay();
+                });
+            });
+            document.querySelectorAll('.v-down').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    if (isLocked) return;
+                    soundClick();
+                    let idx = parseInt(e.target.getAttribute('data-idx'));
+                    letterIdx[idx] = (letterIdx[idx] - 1 + 26) % 26; 
+                    updateDisplay();
+                });
+            });
+
+            document.getElementById('vault-submit').addEventListener('click', () => {
+                if (isLocked) return;
+                let userAns = alphabet[letterIdx[0]] + alphabet[letterIdx[1]] + alphabet[letterIdx[2]];
+                evaluateAnswer(userAns === currentAnswer, container);
+            });
+        }
+    </script>
+</body>
+</html>
